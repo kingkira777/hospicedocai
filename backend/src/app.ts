@@ -3,6 +3,7 @@ import cors from "cors";
 import api from './api';
 import db from './models';
 import path from "path";
+import nocache from "nocache";
 
 import { NotFound } from "./middleware/API_404.md";
 
@@ -13,6 +14,7 @@ const app = express();
 /**
  * body-parsing middleware to populate req.body
  */
+app.use(nocache());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
