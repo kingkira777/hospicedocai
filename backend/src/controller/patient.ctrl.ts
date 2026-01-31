@@ -26,10 +26,16 @@ class PatientController {
 
     List = async (companyId: number, offset: number, limit: number) => {
         try {
+            const whereClause:any = {
+                companyId,
+            }
+
+            console.log("whereClause", whereClause);
             console.log("offset", offset);
             console.log("limit", limit);
+
             const patients =  	await Patient.findAndCountAll({ 
-                where: { companyId }, 
+                where: whereClause, 
                 limit: limit, 
                 offset: offset,
                 order: [['id', 'DESC']] 
