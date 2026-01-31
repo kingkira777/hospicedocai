@@ -16,7 +16,7 @@ const db = new Sequelize({
     username : dbUser,
     password : dbPwd,
     logging : false,
-    models : [__dirname + '/*.model.ts']
+    models :  [__dirname + '/**/*{.model.ts,.model.js}']
 });
 
 export default db;
