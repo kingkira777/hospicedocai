@@ -11,9 +11,15 @@ import {
 } from '@mui/material';
 
 
+import api from '../../utils/axios';
+import { ShowAlert } from '../../utils/sweetAlert';
+import { useNavigate } from 'react-router';
+
 export default function SignUp() {
+
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    companyName: '',
+    company: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -23,13 +29,22 @@ export default function SignUp() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
     console.log('Sign Up Data:', formData);
+
+    try {
+      const { data } = await api.post('/auth/register', formData);
+      console.log("Sign Up Response:", data);
+      navigate('/sign-in');
+    } catch (error) {
+      console.error("Sign Up Error:", error);
+      ShowAlert({title: 'Error', text: 'User creation failed', icon: 'error', isToast: true});
+    }
   };
 
   return (
@@ -70,9 +85,9 @@ export default function SignUp() {
               required
               fullWidth
               label="Company Name"
-              name="companyName"
+              name="company"
               autoFocus
-              value={formData.companyName}
+              value={formData.company}
               onChange={handleChange}
             />
             <TextField
