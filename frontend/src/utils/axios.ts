@@ -5,7 +5,7 @@ const locURL = "http://localhost:3001/api/v1";
 
 
 const api = axios.create({
-    baseURL: devURL
+    baseURL: locURL
 });
 
 export default api;

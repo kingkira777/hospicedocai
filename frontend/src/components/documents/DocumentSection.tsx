@@ -106,7 +106,10 @@ const DocumentSection = ({ title, fileTexts, files, patientId }: DocumentSection
                     <Typography variant="body2">{text}</Typography>
                     </Grid>
                     <Grid size={{ xs: 3 }}>
-                    <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 'bold' }}>(Required)</Typography>
+                    <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 'bold' }}>
+                        {(['Election of Benefit', 'Initial Certification'].includes(text) ? 'Required *' : '')}
+                        {(['Recertification'].includes(text) ? '(BP2+)' : '')}
+                    </Typography>
                     </Grid>
                     <Grid size={{ xs: 5 }} textAlign="right">
                     <Button variant="outlined" component="label" size="small" sx={{ textTransform: 'none' }}>

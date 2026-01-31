@@ -1,81 +1,135 @@
 import OpenAI from "openai";
 import fs from "fs";
-import exp from "constants";
-
+import { file, z } from "zod";
+import { zodTextFormat } from "openai/helpers/zod";
+import { MEDICAL_SYSTEM_PROMPT } from "../constant/AI_instrunctions";
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
+const MedicalExtractionSchema = z.object({
+  file_name: z.string().describe("Name of the file"),
+  summary: z.object({
+    is_documented: z.boolean(),
+    visit_date: z.string().nullable(),
+    clinician_signature_present: z.boolean(),
+  }),
+  physical_assessment: z.object({
+    vitals: z.string().describe("Height, Weight, Pulse, BP, Temp, O2 if found"),
+    cardiac_findings: z.string().nullable(),
+    skin_wound_notes: z.string().nullable(),
+  }),
+  indicators_of_decline: z.array(z.string()).describe("Any mention of worsening symptoms"),
+  suggested_care_plan_updates: z.array(z.string()),
+  hallucination_check: z.string().describe("Direct quote from the PDF used for this summary"),
+  narrative: z.string().describe("Check if the summary is correct or incorrect and related to whole document, Answer it with accurate or not then follow up with a summary of the findings"),
+  missing : z.string().describe("Any mention of missing data"),
+  strengthen_the_case : z.string().describe("Give a suggestion or advice to strengthen the case if the documents is incomplete or inconsistent"),
+  non_rn_notes: z.string().describe("Summary if not a RN Notes"),
+});
 
-const AnalyzeMedicalPaper = async (filePath: string) => {
+const MultiFileResponseSchema = z.object({
+  analysis_results: z.array(MedicalExtractionSchema).describe("List of results for each document")
+});
+
+
+
+const analyzeMultipleRNNotes = async (pdfPaths: string[]) => {
     try {
-        console.log("--- Step 1: Uploading Medical Paper ---");
-        const file = await openai.files.create({
-            file: fs.createReadStream(filePath),
-            purpose: "assistants",
-        });
+        // 1. Create a persistent Conversation object
+        const conversation = await openai.conversations.create();
+        const convId = conversation.id;
 
-        console.log("--- Step 2: Creating Vector Store for Analysis ---");
-        const vectorStore = await openai.vectorStores.create({
-            name: "Medical Research Knowledge Base",
-            file_ids: [file.id],
-        });
+        // 1. Upload all files in parallel
+        console.log(`Uploading ${pdfPaths.length} medical files...`);
+        const uploadedFiles = await Promise.all(
+            pdfPaths.map(async (path) => {
+            const file = await openai.files.create({
+                file: fs.createReadStream(path),
+                purpose: "user_data",
+            });
+            return file.id;
+            })
+        );
 
-        console.log("--- Step 3: Configuring Medical Assistant ---");
-        const assistant = await openai.beta.assistants.create({
-            name: "Clinical Research Analyst",
-            instructions: `You are a clinical research reviewer. Analyze medical papers 
-            with high precision. Focus on methodology, sample size (N), primary endpoints, 
-            and statistical significance (p-values).`,
-            model: "gpt-4o", // Or 'gpt-5' if available in your tier
-            tools: [{ type: "file_search" }],
-            tool_resources: {
-                file_search: { vector_store_ids: [vectorStore.id] }
-            }
-        });
+        // 2. Prepare the multi-file content for the user message
+        const fileInputs = uploadedFiles.map(id => ({
+            type: "input_file" as const,
+            file_id: id
+        }));
 
-        console.log("--- Step 4: Running Template 2 Analysis ---");
-        const thread = await openai.beta.threads.create({
-            messages: [
-                {
-                role: "user",
-                content: `Please summarize the attached study:
-                1. Identify the Primary Endpoint and Sample Size (N).
-                2. Summarize Key Findings in 3 bullet points.
-                3. Evaluate the Strength of Evidence (e.g., RCT vs Observational).
-                4. List any Limitations mentioned by the authors.`
+        // 3. Request Analysis with Medical Persona (Developer Role)
+        console.log("Analyzing files with Professional Medical Assistant persona...");
+
+        let analysisResult:any;
+        let attempts = 0;
+
+        while (attempts < 3) {
+            try {
+                
+                analysisResult = await openai.responses.create({
+                    metadata : {
+                        "auto_delete_after": "30" // 1 hour (3600 seconds)
+                    },
+                    model: "gpt-4o",
+                    conversation : convId,
+                    input: [
+                        {
+                            role: "developer",
+                            content: [{ type: "input_text", text: MEDICAL_SYSTEM_PROMPT }] // Same prompt as before
+                        },
+                        {
+                            role: "user",
+                            content: [
+                            { type: "input_text", text: "Please compare and extract data from these attached notes. Identify any discrepancies in F2F or clinical decline across these documents." },
+                            ...fileInputs // Spread the array of file IDs here
+                            ]
+                        }
+                    ],
+                    // Extracting an array of results, one for each file
+                    text: {
+                        format: zodTextFormat(MultiFileResponseSchema, "medical_batch")
+                    }
+                });
+                break;
+            } catch (error: any) {
+                if (error.status === 404) {
+                    console.log("Files still indexing... waiting 2 seconds.");
+                    await new Promise(res => setTimeout(res, 2000));
+                    attempts++;
+                } else {
+                    throw error;
                 }
-            ]
-        });
-
-        // Start the run
-        const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
-            assistant_id: assistant.id,
-        });
-
-        if (run.status === 'completed') {
-        const messages = await openai.beta.threads.messages.list(thread.id);
-        const lastMessage = messages.data[0].content[0];
-        
-        if (lastMessage.type === 'text') {
-            console.log("\n--- ANALYSIS RESULT ---\n");
-            console.log(lastMessage.text.value);
-            return lastMessage.text.value;
+                
+            }
         }
-        } else {
-            console.error("Run failed with status:", run.status);
-        }
-
-        // Cleanup (Optional but recommended for privacy/cost)
-        await openai.beta.assistants.delete(assistant.id);
-        await openai.vectorStores.delete(vectorStore.id);
-
-
+        const finalResults = JSON.parse(analysisResult.output_text);
+        return { convId, finalResults };
     } catch (error) {
         console.error("Error in AnalyzeMedicalPaper:", error);
         throw error;   
     }
 };
 
-export { openai, AnalyzeMedicalPaper };
+
+const AskFollowUpQuestion = async (convId: string, question: string) => {
+    try {
+        const response = await openai.responses.create({
+            model: "gpt-4o",
+            conversation : convId,
+            input: [
+                {
+                    role: "user",
+                    content: [{ type: "input_text", text: question }] // Same prompt as before
+                }
+            ]
+        });
+        return response.output_text;
+    } catch (error) {
+        console.error("Error in AnalyzeMedicalPaper:", error);
+        throw error;   
+    }
+};
+
+export { openai, analyzeMultipleRNNotes, AskFollowUpQuestion };

@@ -1,28 +1,38 @@
 import express = require('express');
 import fs from 'fs';
-import { AnalyzeMedicalPaper } from '../utils/API_OpenAI';
+import { analyzeMultipleRNNotes } from '../utils/API_OpenAI';
+import fileCtrl from '../controller/file.ctrl';
+import { AskFollowUpQuestion } from '../utils/API_OpenAI';
 import path from 'path';
 const router = express.Router();
 
 
-router.post("/analyze-medical-paper", async (req, res) => {
+router.post("/analyze-medical-paper/:patientId", async (req, res) => {
     try {
         // const { filePath } = req.body;
-        const filePath = path.join(__dirname, '../uploads/file-1769828852608-998799239.pdf'); //'../uploads/file-1769828852608-998799239.pdf';
-        if (!filePath) {
-            return res.status(400).json({ error: "filePath is required in the request body." });
-        }
+        const patientId = parseInt(req.params.patientId, 10);
 
-        if(fs.existsSync(filePath) === false){
-            return res.status(400).json({ error: "File does not exist at the specified filePath." });
+        const patientFiles = await fileCtrl.GetFilesByPatientId(patientId);
+        const files:any = [];
+        for (const file of patientFiles) {
+            const filePath = path.join(__dirname, `../uploads/${file.fileName}`); //'../uploads/file-1769828852608-998799239.pdf';
+            files.push(filePath);
         }
-
-        if (fs.statSync(filePath).size === 0) {
-            return res.status(400).json({ error: "File is empty." });
-        }
-
-        const result = await AnalyzeMedicalPaper(filePath);
+        console.log('Files to be analyzed:', files);
+        const result = await analyzeMultipleRNNotes(files);
         res.json(result);
+    } catch (error) {
+        res.status(400).json({ error: (error as Error).message });
+    }
+});
+
+
+router.post('/follow-up-question', async (req, res) => {
+    try {
+        const { convId, question } = req.body;
+        console.log(req.body);
+        const response = await AskFollowUpQuestion(convId, question);
+        res.json({ response });
     } catch (error) {
         res.status(400).json({ error: (error as Error).message });
     }
