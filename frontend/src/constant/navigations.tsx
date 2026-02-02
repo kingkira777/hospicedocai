@@ -3,10 +3,13 @@ import {
   Dashboard as DashboardIcon,
   FileUploadOutlined as FileUploadOutlinedIcon,
   Description as DescriptionIcon,
-  People as PeopleIcon
+  People as PeopleIcon,
+  BackupTableOutlined,
+  GroupOutlined
 } from '@mui/icons-material';
+import { Session } from '../SessionContext';
 
-const getNavigation = (): Navigation => {
+const getNavigation = (session: Session | null): Navigation => {
 
     const NAVIGATION: Navigation = [
       {
@@ -24,6 +27,12 @@ const getNavigation = (): Navigation => {
         pattern: '/patients',
       },
       {
+        segment: 'cases/documents',
+        title: 'Documents',
+        icon: <BackupTableOutlined />,
+        pattern: '/cases/documents',
+      },
+      {
         kind: 'header',
         title: 'Analytics',
       },
@@ -33,13 +42,23 @@ const getNavigation = (): Navigation => {
         icon: <DescriptionIcon />,
         pattern: '/cases',
       },
-      {
-        segment: 'cases/documents',
-        title: 'Documents',
-        icon: <FileUploadOutlinedIcon />,
-        pattern: '/cases/documents',
-      },
+      
     ];
+
+    if(session?.user.role === 'admin') {
+      NAVIGATION.push(
+        {
+          kind: 'header',
+          title: 'Settings',
+        },
+        {
+          segment: 'users',
+          title: 'Users',
+          icon: <GroupOutlined />,
+          pattern: '/users',
+        }
+      );
+    }
     
     return NAVIGATION;
 }

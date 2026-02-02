@@ -8,6 +8,9 @@ import PatientsPage from './pages/patients/index';
 
 import CasesPage from './pages/cases';
 import DocumentsPage from './pages/documents';
+import ADRPage from './pages/adr';
+
+import UserPage from './pages/users';
 
 import SignIn from './pages/auth/signIn';
 import SignUp from './pages/auth/signUp';
@@ -68,6 +71,34 @@ const router = createBrowserRouter([
               </ProtectedRoute>
             ),
           }
+        ],
+      },
+      {
+        'path': 'adr',
+        'Component': Layout,
+        'children': [
+          {
+            'path': '',
+            'Component': () => (
+              <ProtectedRoute allowedRoles={['admin', 'user']}>
+                <ADRPage />
+              </ProtectedRoute>
+            ),
+          }
+        ]
+      },
+      {
+        path: 'users',
+        Component: Layout,
+        children: [
+          {
+            path: '',
+            Component: () => (
+              <ProtectedRoute allowedRoles={['admin']}>
+                <UserPage />
+              </ProtectedRoute>
+            ),
+          },
         ],
       },
       {

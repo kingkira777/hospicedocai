@@ -5,6 +5,7 @@ import authRoutes from './auth';
 import patientRoutes from './patient';
 import fileRoutes from './file';
 import casesRoutes from './cases';
+import userRoute from './user';
 
 
 const router = express.Router();
@@ -24,6 +25,7 @@ router.use("/auth", authRoutes);
 router.use("/patient", patientRoutes);
 router.use("/file", fileRoutes);
 router.use("/cases", casesRoutes);
+router.use("/user", userRoute);
 
 
 export default router;

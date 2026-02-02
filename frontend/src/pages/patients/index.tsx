@@ -109,7 +109,8 @@ const PatientsPage = () => {
         filterable : false,
         renderCell: (e:any) => [
           <GridActionsCellItem key={`edit${e.id}`} icon={<Edit color='primary' />} onClick={() => handleUpdatePatient(e.row)} label="Edit" />,
-          <GridActionsCellItem key={`delete${e.id}`} icon={<Delete color='error' />} onClick={() => handleRemovePatient(e.row.id)} label="Delete" />,
+          (session?.user.role === 'admin') && <GridActionsCellItem key={`delete${e.id}`} icon={<Delete color='error' />} onClick={() => handleRemovePatient(e.row.id)} label="Delete" />
+          
         ],
     }
   ]

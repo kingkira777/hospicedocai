@@ -27,12 +27,12 @@ class AuthController {
                 ] 
             });
             if (!user) {
-                throw new Error("User not found");
+                return 'user not found';
             }
 
             const passwordMatch = await bcrypt.compare(password, user.password || '');
             if (!passwordMatch) {
-                throw new Error("Invalid password");
+                return 'invalid password';
             }
             return user;
         } catch (error) {

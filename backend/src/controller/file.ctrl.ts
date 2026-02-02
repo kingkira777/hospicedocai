@@ -26,6 +26,23 @@ class FileController {
 
     CreateFile = async (fileData: FileInput ) => {
         try {
+
+            const ifExists = await File.findOne({
+                where: {
+                    patientId: fileData.patientId,
+                    name: fileData.name
+                }
+            });
+            if (ifExists) {
+                //Update file
+                return await File.update(fileData, {
+                    where: {
+                        patientId: fileData.patientId,
+                        name: fileData.name
+                    }
+                }); 
+            }
+
             const file = await File.create(fileData);
             return file;
         } catch (error) {

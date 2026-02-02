@@ -5,6 +5,7 @@ import type { Session as ToolpadSession } from '@toolpad/core';
 export interface User {
   id: string;
   companyId: string;
+  company: string;
   name: string;
   email: string;
   image?: string;

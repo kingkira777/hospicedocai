@@ -1,7 +1,7 @@
 import User from "../models/user.model";
 import Company from "../models/company.model";
 import bcrypt from "bcrypt";
-
+import { Op } from "sequelize";
 
 export type UserCreateInput = {
     id?: number;
@@ -13,9 +13,24 @@ export type UserCreateInput = {
 
 class UserController {
 
-    List = async () => {
+    List = async (companyId: number, userId: number) => {
         try {
-            const users = await User.findAll();
+            const users = await User.findAndCountAll({
+                where: { 
+                    companyId,
+                    id: { [Op.ne]: userId }
+                },
+                include: [
+                    {
+                        model: Company,
+                        as: 'company',
+                        attributes: ['id', 'name']
+                    }
+                ],
+                limit: 5,
+                offset: 0,
+                order: [['createdAt', 'DESC']]
+            });
             return users;
         } catch (error) {
             console.error("Error in UserController List:", error);
@@ -37,12 +52,10 @@ class UserController {
     Create = async (userData: Partial<UserCreateInput>) => {
         try {
 
-            const findCompany = await Company.findOne({ where: { name: userData.company } });
-            if (!findCompany) {
-                throw new Error("Company not found");
+            const countUser = await User.count({ where: { companyId: userData.companyId } });
+            if(countUser >= 4) {
+                return "limit of users reached";
             }
-            userData.companyId = findCompany.id;
-
             const encryptedPassword = await bcrypt.hash(userData.password || '', 10);
             userData.password = encryptedPassword;
             const newUser = await User.create(userData);
@@ -67,7 +80,7 @@ class UserController {
         }
     };
 
-    Delete = async (id: number) => {
+    Remove = async (id: number) => {
         try {
             const user = await User.findByPk(id);
             if (!user) {

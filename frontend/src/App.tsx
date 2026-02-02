@@ -11,6 +11,7 @@ const BRANDING = {
 };
 
 
+
 export default function App() {
   const [session, setSessionState] = React.useState<Session | null>(() => {
     const storedSession = localStorage.getItem('session');
@@ -41,10 +42,14 @@ export default function App() {
   
   return (
     <SessionContext.Provider value={sessionContextValue}>
-      <ReactRouterAppProvider navigation={getNavigation()} 
-      branding={BRANDING} 
-      session={session} 
-      authentication={{ signIn, signOut }}>
+      <ReactRouterAppProvider
+        navigation={getNavigation(session)} 
+        branding={BRANDING} 
+        session={session} 
+        authentication={{ signIn, signOut }}
+        
+        
+      >
         <Outlet />
       </ReactRouterAppProvider>
     </SessionContext.Provider>
