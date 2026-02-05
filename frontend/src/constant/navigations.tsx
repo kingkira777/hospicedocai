@@ -42,6 +42,12 @@ const getNavigation = (session: Session | null): Navigation => {
         icon: <DescriptionIcon />,
         pattern: '/cases',
       },
+      {
+        segment: 'adr',
+        title: 'ADR Analysis',
+        icon: <DescriptionIcon />,
+        pattern: '/adr',
+      },
       
     ];
 

@@ -6,6 +6,7 @@ import patientRoutes from './patient';
 import fileRoutes from './file';
 import casesRoutes from './cases';
 import userRoute from './user';
+import adrRoute from './adr';
 
 
 const router = express.Router();
@@ -26,6 +27,7 @@ router.use("/patient", patientRoutes);
 router.use("/file", fileRoutes);
 router.use("/cases", casesRoutes);
 router.use("/user", userRoute);
+router.use("/adr", adrRoute);
 
 
 export default router;

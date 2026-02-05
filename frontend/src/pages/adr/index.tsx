@@ -1,45 +1,69 @@
 import { PageContainer } from "@toolpad/core"
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Box, Typography, Grid, Card, CardContent, Button, Stack, 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-    LinearProgress, Divider, List, ListItem, ListItemIcon, ListItemText, Checkbox, Chip,
-    SelectChangeEvent, Select, MenuItem,FormControl, InputLabel
+    LinearProgress, Chip,
+    SelectChangeEvent, Select, MenuItem,FormControl, InputLabel, Accordion, AccordionSummary, AccordionDetails
 } from '@mui/material';
-import { Warning, CheckCircle, Description, Person} from "@mui/icons-material";
-// --- ADR Audit Document Checklist ---
-const auditDocs = [
-  "Election of Benefit", "Initial Certification", "Recertification",
-  "F2F Encounter", "RN Initial Assessment", "Physician Notes",
-  "Plan of Care", "IDG Notes", "Visit Notes", "Medication List / MAR"
-];
-
-
-// --- Mock Database of Patients ---
-const patientsDb = {
-  "P-1002": {
-    name: "James Walker",
-    details: "79y • M • San Bernardino, CA • SNF (Q5002)",
-    diagnosis: "I50.9 (CHF)",
-    risk: 74,
-    status: "FAIL",
-    vitals: { date: "2026-01-05", weight: "170 lbs", bp: "128/76", hr: "78", spo2: "95%" }
-  },
-  "P-1005": {
-    name: "Sarah Jenkins",
-    details: "82y • F • Riverside, CA • Home Health",
-    diagnosis: "G30.9 (Alzheimer's)",
-    risk: 42,
-    status: "PASS",
-    vitals: { date: "2026-01-20", weight: "135 lbs", bp: "118/70", hr: "72", spo2: "98%" }
-  }
-};
+import { Warning, Person, ExpandMore, Assistant} from "@mui/icons-material";
+import DocumentListSidebar from "../../components/adr/DocumentListSidebar";
+import { useSession } from "../../SessionContext";
+import api from "../../utils/axios";
+import { ShowAlert } from '../../utils/sweetAlert';
 
 const ADRPage = () => {
-    const [selectedId, setSelectedId] = useState('P-1002');
+    const { session } = useSession();
+    const [selectedId, setSelectedId] = useState('0');
     const [checked, setChecked] = useState<string[]>(['Plan of Care', 'Visit Notes']);
+    const [patientList, setPatientList]:any = useState([]);
+    const [analysisData, setAnalysisData]:any = useState({});
+    const [loading, setLoading] = useState(false);
 
-    const patient = patientsDb[selectedId as keyof typeof patientsDb];
+
+    const FetchPatientAnalysisData = async () => {
+        try {
+            if(selectedId === '0') {
+                ShowAlert({ title: 'Patient Not Selected', text: 'Please select a patient', icon: 'warning', isToast: true });
+                return
+            };
+            setLoading(true);
+            const { data } = await api.post(`/adr/analyze-adr-medical-paper/${selectedId}`);
+            console.log("Fetched patient analysis data:", data);
+            setAnalysisData(data);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error in FetchPatientAnalysisData:", error);
+        }
+    };
+
+
+
+    const FetchPatientSelectList = async () => {
+        try {
+            const { data } = await api.get(`/patient/list-select?companyId=${session?.user?.companyId}`);
+            console.log("Fetched patient select list:", data);
+            const formData:any = [];
+            for(const patient of data){
+                const xData = {
+                    id: patient.id,
+                    name: patient.firstName + ' ' + patient.lastName,
+                    gender : patient.gender,
+                    dateOfBirth: patient.dateOfBirth,
+                    startOfCare: patient.startOfCare,
+                };
+                formData.push(xData);
+            }
+            setPatientList(formData);
+        } catch (error) {
+            console.error("Error in FetchPatientSelectList:", error);
+        }
+    };
+
+    useEffect(() => {
+        FetchPatientSelectList();
+    }, []);
+
 
     const handlePatientChange = (event: SelectChangeEvent) => {
         setSelectedId(event.target.value);
@@ -57,7 +81,7 @@ const ADRPage = () => {
     return (
         <PageContainer>
 
-            <Box sx={{ p: 3, bgcolor: '#f8f9fa', minHeight: '100vh' }}>
+            <Box sx={{ p: 3, bgcolor: 'background.default', minHeight: '100vh' }}>
                 {/* Patient Selector Header */}
                 <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
                     <FormControl size="small" sx={{ minWidth: 250, bgcolor: 'white' }}>
@@ -68,137 +92,286 @@ const ADRPage = () => {
                         label="Select Patient"
                         onChange={handlePatientChange}
                     >
-                        <MenuItem value="P-1002">James Walker (P-1002)</MenuItem>
-                        <MenuItem value="P-1005">Sarah Jenkins (P-1005)</MenuItem>
+                        {
+                            patientList.map((patient: any) => (
+                                <MenuItem key={patient?.id} value={patient?.id}>{patient?.name} ({patient?.id})</MenuItem>
+                            ))
+                        }
                     </Select>
                     </FormControl>
                     <Chip icon={<Person />} label={`ID: ${selectedId}`} variant="outlined" />
+                    <Button 
+                        loading={loading}
+                        loadingPosition="start"
+                        onClick={FetchPatientAnalysisData} 
+                        variant="outlined" 
+                        size="small" 
+                        startIcon={<Assistant />}>Generate AI Assistant</Button>
                 </Box>
+
+
                 <Grid container spacing={3}>
                     
                     {/* LEFT: Dashboard Content */}
                     <Grid size={{ xs: 12, md: 9 }}>
                     <Stack spacing={3}>
-                        
                         {/* Patient & Risk Summary */}
                         <Grid container spacing={2}>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                            <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                            <CardContent>
-                                <Typography variant="h5" fontWeight="bold">James Walker <Typography component="span" color="text.secondary" variant="h6">(P-1002)</Typography></Typography>
-                                <Typography variant="body2" color="text.secondary">79y • M • San Bernardino, CA • SNF (Q5002)</Typography>
-                                
-                                <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-                                <Box sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 1, flex: 1 }}>
-                                    <Typography variant="caption" fontWeight="bold">Diagnosis</Typography>
-                                    <Typography variant="body2" color="primary" fontWeight="bold">I50.9 (CHF)</Typography>
-                                </Box>
-                                <Box sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 1, flex: 1 }}>
-                                    <Typography variant="caption" fontWeight="bold">Eligibility</Typography>
-                                    <Typography variant="body2" color="error" fontWeight="bold">FAIL</Typography>
-                                </Box>
-                                </Stack>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                                <CardContent>
+                                    <Typography variant="h5" fontWeight="bold">
+                                        {patientList.filter((x: any) => x.id === selectedId)[0]?.name}
+                                        <Typography component="span" color="text.secondary" variant="h6">({patientList.filter((x: any) => x.id === selectedId)[0]?.id})</Typography>
+                                    </Typography>
 
-                                <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-                                <Button variant="contained" size="small">Export ADR Packet</Button>
-                                <Button variant="outlined" size="small">Generate Table</Button>
-                                </Stack>
-                            </CardContent>
-                            </Card>
-                        </Grid>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {analysisData.patient_details?.age}y • {analysisData.patient_details?.address}
+                                    </Typography>
+                                    
+                                    <Stack direction="column" spacing={1} sx={{ mt: 3 }}>
+                                        <Box sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 1, flex: 1 }}>
+                                            <Typography variant="caption" fontWeight="bold">Diagnosis</Typography>
+                                            <Typography variant="body2" color="primary" fontWeight="bold">
+                                                {analysisData.patient_details?.diagnosis}
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 1, flex: 1 }}>
+                                            <Typography variant="caption" fontWeight="bold">Eligibility</Typography>
+                                            <Typography variant="body2" color={analysisData.patient_details?.eligibility === 'Yes' ? 'success' : 'error'} fontWeight="bold">
+                                                {analysisData.patient_details?.eligibility}
+                                            </Typography>
+                                        </Box>
+                                    </Stack>
 
-                        <Grid size={{ xs: 12, md: 5 }}>
-                            <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: '#fff' }}>
-                            <CardContent>
-                                <Stack direction="row" justifyContent="space-between">
-                                <Typography variant="subtitle2" fontWeight="bold">ADR Risk Score</Typography>
-                                <Typography variant="h4" fontWeight="bold">74</Typography>
-                                </Stack>
-                                <Chip icon={<Warning />} label="CRITICAL" color="error" size="small" sx={{ mb: 2 }} />
-                                <LinearProgress variant="determinate" value={74} color="error" sx={{ height: 8, borderRadius: 5, mb: 2 }} />
-                                
-                                <Grid container spacing={1}>
-                                {['Medical Necessity', 'Governance', 'Fraud/Misrep'].map((item) => (
-                                    <Grid size={{ xs:4}} key={item}>
-                                    <Typography variant="caption" display="block" color="text.secondary">{item}</Typography>
-                                    <Typography variant="body2" fontWeight="bold">High</Typography>
+                                    {/* <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
+                                        <Button variant="contained" size="small">Export ADR Packet</Button>
+                                        <Button variant="outlined" size="small">Generate Table</Button>
+                                    </Stack> */}
+                                </CardContent>
+                                </Card>
+                            </Grid>
+
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: 'Background.default' }}>
+                                <CardContent>
+                                    <Stack direction="row" justifyContent="space-between">
+                                        <Typography variant="subtitle2" fontWeight="bold">ADR Risk Score</Typography>
+                                        <Typography variant="h4" fontWeight="bold">
+                                            {analysisData.overall_score}
+                                        </Typography>
+                                    </Stack>
+                                    <Chip icon={<Warning />} 
+                                        label={(analysisData.overall_score > 50) ? "High Risk" : "Low Risk"} 
+                                        color={(analysisData.overall_score > 50) ? "error" : "success"} 
+                                        size="small" 
+                                        sx={{ mb: 2 }} />
+                                    <LinearProgress variant="determinate" 
+                                        value={analysisData.overall_score | 0} 
+                                        color={(analysisData.overall_score > 50) ? "error" : "success"  } 
+                                        sx={{ height: 8, borderRadius: 5, mb: 2 }} />
+                                    
+                                    <Grid container spacing={1}>
+                                        {
+                                            <Grid size={{ xs:4}}>
+                                                <Typography variant="caption" display="block" color="text.secondary">Medical Necessity</Typography>
+                                                <Typography variant="body2" fontWeight="bold">{analysisData.categories?.medical_necessity.rating}</Typography>
+                                            </Grid>
+                                        }
+                                        {
+                                            <Grid size={{ xs:4}}>
+                                                <Typography variant="caption" display="block" color="text.secondary">Governance</Typography>
+                                                <Typography variant="body2" fontWeight="bold">{analysisData.categories?.governance.rating}</Typography>
+                                            </Grid>
+                                        }
+                                        {
+                                            <Grid size={{ xs:4}}>
+                                                <Typography variant="caption" display="block" color="text.secondary">Fraud/Misrep</Typography>
+                                                <Typography variant="body2" fontWeight="bold">{analysisData.categories?.fraud_misrepresentation.rating}</Typography>
+                                            </Grid>
+                                        }
                                     </Grid>
-                                ))}
-                                </Grid>
+                                </CardContent>
+                                </Card>
+                            </Grid>
+                        </Grid>
+
+                        {/* Symptom Summary Card */}
+                        <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: '#f8f9fb' }}>
+                            <CardContent>
+                                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>Symptom Summary (ADR lens):</Typography>
+                                <Typography variant="body2" component="ul" sx={{ pl: 2, color: 'text.secondary' }}>
+                                {
+                                    analysisData.symptoms_summary?.map((s:any, i:any) => <li key={i}>{s}</li>)
+                                }
+                                {/* <li>Dyspnea at rest and minimal exertion; SpO2 persistently ≤90%</li>
+                                <li>Increased fatigue; reduced intake with progressive nutritional decline</li>
+                                <li>PRN bronchodilator use increased; no sustained improvement noted</li> */}
+                                </Typography>
                             </CardContent>
-                            </Card>
-                        </Grid>
-                        </Grid>
+                        </Card>
+                        
+                        {/* Category Table */}
+                        <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                            <Box sx={{ p: 2, borderBottom: '1px solid #eee' }}>
+                                <Typography variant="subtitle1" fontWeight="bold">Categories</Typography>
+                            </Box>
+                            <TableContainer>
+                                <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                    <TableCell><strong>Category</strong></TableCell>
+                                    <TableCell><strong>Score</strong></TableCell>
+                                    <TableCell><strong>Rating</strong></TableCell>
+                                    <TableCell><strong>Findings</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell><strong>Medical Necessity</strong></TableCell>
+                                        <TableCell>{analysisData.categories?.medical_necessity.score}</TableCell>
+                                        <TableCell>{analysisData.categories?.medical_necessity.rating}</TableCell>
+                                        <TableCell>
+                                            <Typography variant="caption" component="ul" sx={{ pl: 2 }}>
+                                                {analysisData.categories?.medical_necessity.findings.map((h:any, i:any) => <li key={i}>{h}</li>)}
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><strong>Governance</strong></TableCell>
+                                        <TableCell>{analysisData.categories?.governance.score}</TableCell>
+                                        <TableCell>{analysisData.categories?.governance.rating}</TableCell>
+                                        <TableCell>
+                                            <Typography variant="caption" component="ul" sx={{ pl: 2 }}>
+                                                {analysisData.categories?.governance.findings.map((h:any, i:any) => <li key={i}>{h}</li>)}
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><strong>Fraud/Misrep</strong></TableCell>
+                                        <TableCell>{analysisData.categories?.fraud_misrepresentation.score}</TableCell>
+                                        <TableCell>{analysisData.categories?.fraud_misrepresentation.rating}</TableCell>
+                                        <TableCell>
+                                            <Typography variant="caption" component="ul" sx={{ pl: 2 }}>
+                                                {analysisData.categories?.fraud_misrepresentation.findings.map((h:any, i:any) => <li key={i}>{h}</li>)}
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Card>
+
+
 
                         {/* Evidence Table */}
                         <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                        <Box sx={{ p: 2, borderBottom: '1px solid #eee' }}>
-                            <Typography variant="subtitle1" fontWeight="bold">Benefit Period Evidence</Typography>
+                            <Box sx={{ p: 2, borderBottom: '1px solid #eee' }}>
+                                <Typography variant="subtitle1" fontWeight="bold">Benefit Period Evidence</Typography>
+                            </Box>
+                            <TableContainer>
+                                <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                    <TableCell><strong>Date</strong></TableCell>
+                                    <TableCell><strong>Weight</strong></TableCell>
+                                    <TableCell><strong>BP / HR</strong></TableCell>
+                                    <TableCell><strong>SpO2</strong></TableCell>
+                                    <TableCell><strong>Pain</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {
+                                        analysisData.benefit_period_evidence?.map((row:any, index:any) => (
+                                            <TableRow>
+                                                <TableCell>{row.date}</TableCell>
+                                                <TableCell>{row.weight}</TableCell>
+                                                <TableCell>{row.bp_hr}</TableCell>
+                                                <TableCell>{row.spo2}</TableCell>
+                                                <TableCell>{row.pain}</TableCell>
+                                            </TableRow> 
+                                        ))
+                                    }
+                                </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Card>
+
+                        {/* Document Presence & Highlights Table */}
+                        <Card variant="outlined" sx={{ borderRadius: 3 }}>
+                        <Box sx={{ p: 2, bgcolor: 'action.hover', borderBottom: '1px solid #eee' }}>
+                            <Typography variant="subtitle1" fontWeight="bold">RN Admission / MD / IDG Presence</Typography>
                         </Box>
                         <TableContainer>
                             <Table size="small">
-                            <TableHead sx={{ bgcolor: '#fcfcfc' }}>
+                            <TableHead>
                                 <TableRow>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Weight</TableCell>
-                                <TableCell>BP / HR</TableCell>
-                                <TableCell>SpO2</TableCell>
-                                <TableCell>Pain</TableCell>
+                                <TableCell><strong>Document</strong></TableCell>
+                                <TableCell><strong>Date</strong></TableCell>
+                                <TableCell><strong>Highlights</strong></TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                <TableRow>
-                                <TableCell>2026-01-05</TableCell>
-                                <TableCell>170 lbs</TableCell>
-                                <TableCell>128/76 | 78</TableCell>
-                                <TableCell>95%</TableCell>
-                                <TableCell>2</TableCell>
+                                {analysisData.document_highlights?.map((row:any, index:any) => (
+                                <TableRow key={index} sx={{ '&:last-child td': { border: 0 } }}>
+                                    <TableCell sx={{ fontWeight: 'bold', verticalAlign: 'top' }}>{row.document}</TableCell>
+                                    <TableCell sx={{ verticalAlign: 'top' }}>{row.date}</TableCell>
+                                    <TableCell>
+                                    <Typography variant="caption" component="ul" sx={{ pl: 2 }}>
+                                        {row.highlights.map((h:any, i:any) => <li key={i}>{h}</li>)}
+                                    </Typography>
+                                    </TableCell>
                                 </TableRow>
+                                ))}
                             </TableBody>
                             </Table>
                         </TableContainer>
                         </Card>
+
+            
+
+
+                         {/* 3. ADR Audit Topics (New Section) */}
+                        <Box>
+                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
+                            <Typography variant="subtitle1" fontWeight="bold">ADR Audit Topics (1-15)</Typography>
+                            {/* <Chip label={
+                                    analysisData.audit_topics?.map((topic:any) => topic.status === 'PASS').length+' PASS, '
+                                    +analysisData.audit_topics?.map((topic:any) => topic.status === 'FAIL').length+' FAIL.'
+                                    +analysisData.audit_topics?.map((topic:any) => topic.status === 'NEEDS WORK').length+' NEEDS WORK.'
+                                } 
+                                variant="outlined" 
+                                size="small" 
+                                color="primary" /> */}
+                        </Stack>
+                        {analysisData.audit_topics?.map((topic:any) => (
+                            <Accordion key={topic.id} variant="outlined" sx={{ mb: 1, borderRadius: '8px !important' }}>
+                            <AccordionSummary expandIcon={<ExpandMore />}>
+                                <Stack direction="row" spacing={2} alignItems="center" sx={{ width: '100%' }}>
+                                <Typography variant="body2" fontWeight="bold" sx={{ flex: 1 }}>{topic.id}. {topic.topic_name}</Typography>
+                                <Chip label={topic.status} size="small" color={topic.status === 'PASS' ? 'success' : 'warning'} sx={{ fontWeight: 'bold' }} />
+                                </Stack>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="caption" display="block" color="text.secondary" gutterBottom>FINDING:</Typography>
+                                <Typography variant="body2" sx={{ mb: 2 }}>{topic.finding}</Typography>
+                                <Typography variant="caption" display="block" color="primary" fontWeight="bold">RECOMMENDATION:</Typography>
+                                <Typography variant="body2">{topic.recommendation}</Typography>
+                            </AccordionDetails>
+                            </Accordion>
+                        ))}
+                        </Box>
 
                     </Stack>
                     </Grid>
 
                     {/* RIGHT: Document Checklist Sidebar */}
                     <Grid size={{ xs: 12, md: 3 }}>
-                    <Card variant="outlined" sx={{ borderRadius: 2, position: 'sticky', top: 20 }}>
-                        <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'white' }}>
-                        <Typography variant="subtitle2" fontWeight="bold">Audit Document Checklist</Typography>
-                        </Box>
-                        <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-                        {auditDocs.map((value) => (
-                            <ListItem key={value} disablePadding>
-                            <ListItemIcon sx={{ minWidth: 40, pl: 2 }}>
-                                <Checkbox
-                                edge="start"
-                                checked={checked.indexOf(value) !== -1}
-                                tabIndex={-1}
-                                disableRipple
-                                onClick={handleToggle(value)}
-                                />
-                            </ListItemIcon>
-                            <ListItemText 
-                                primary={value} 
-                                primaryTypographyProps={{ variant: 'body2', fontWeight: checked.includes(value) ? 'bold' : 'normal' }} 
-                            />
-                            {checked.includes(value) && <CheckCircle color="success" sx={{ fontSize: 16, mr: 2 }} />}
-                            </ListItem>
-                        ))}
-                        </List>
-                        <Divider />
-                        <Box sx={{ p: 2 }}>
-                        <Button fullWidth variant="contained" startIcon={<Description />}>
-                            Upload Missing
-                        </Button>
-                        </Box>
-                    </Card>
+                        <DocumentListSidebar patientId={selectedId} />
                     </Grid>
 
                 </Grid>
-                </Box>
+            </Box>
         </PageContainer>
     )
 }
