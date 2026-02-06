@@ -1,23 +1,25 @@
 import { PageContainer } from "@toolpad/core"
 import React, { useEffect, useState } from 'react';
 import { 
-  Box, Typography, Grid, Card, CardContent, Button, Stack, 
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-    LinearProgress, Chip,
-    SelectChangeEvent, Select, MenuItem,FormControl, InputLabel, Accordion, AccordionSummary, AccordionDetails
+    Box, Typography, Grid, Card, CardContent, Button, Stack, 
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+    LinearProgress, Chip, SelectChangeEvent, Select, MenuItem,FormControl, 
+    InputLabel, Accordion, AccordionSummary, AccordionDetails
 } from '@mui/material';
 import { Warning, Person, ExpandMore, Assistant} from "@mui/icons-material";
 import DocumentListSidebar from "../../components/adr/DocumentListSidebar";
 import { useSession } from "../../SessionContext";
 import api from "../../utils/axios";
 import { ShowAlert } from '../../utils/sweetAlert';
+import { REQUIRED_DOCUMENTS } from "../../constant/documents";
 
 const ADRPage = () => {
     const { session } = useSession();
     const [selectedId, setSelectedId] = useState('0');
-    const [checked, setChecked] = useState<string[]>(['Plan of Care', 'Visit Notes']);
     const [patientList, setPatientList]:any = useState([]);
     const [analysisData, setAnalysisData]:any = useState({});
+    const [patientFiles, setPatientFiles]:any = useState([]);
+    const [requiredFiles, setRequiredFiles]:any = useState(0);
     const [loading, setLoading] = useState(false);
 
 
@@ -28,7 +30,9 @@ const ADRPage = () => {
                 return
             };
             setLoading(true);
-            const { data } = await api.post(`/adr/analyze-adr-medical-paper/${selectedId}`);
+            const { data } = await api.post(`/adr/analyze-adr-medical-paper/${selectedId}`, {
+                userId: session?.user?.id
+            });
             console.log("Fetched patient analysis data:", data);
             setAnalysisData(data);
             setLoading(false);
@@ -37,6 +41,29 @@ const ADRPage = () => {
         }
     };
 
+    const FetchSavedAdrData = async () => {
+        try {
+            if(selectedId === '0') return;
+            const { data } = await api.get(`/adr/data/${selectedId}`);
+            console.log("Fetched saved ADR data:", data);
+            setAnalysisData(data);
+        } catch (error) {
+            console.error("Error in FetchSavedAdrData:", error);
+        }
+    };
+
+    const FetchFilesByPatient = async () => {
+        try {
+            const { data } = await api.get(`/file/by-patient/${selectedId}`);
+            console.log("Fetched file by patient:", data);
+            const files = data.map((file: any) => file.name);
+            const filteredFiles = files.filter((file: any) => REQUIRED_DOCUMENTS.includes(file));
+            setRequiredFiles(filteredFiles.length);
+            setPatientFiles(files);
+        } catch (error) {
+            console.error("Error in FetchFileByPatient:", error);
+        }
+    };
 
 
     const FetchPatientSelectList = async () => {
@@ -64,17 +91,14 @@ const ADRPage = () => {
         FetchPatientSelectList();
     }, []);
 
+    useEffect(() => {
+        FetchFilesByPatient();
+        FetchSavedAdrData();
+    }, [selectedId]);
+
 
     const handlePatientChange = (event: SelectChangeEvent) => {
         setSelectedId(event.target.value);
-    };
-
-    const handleToggle = (value: string) => () => {
-        const currentIndex = checked.indexOf(value);
-        const newChecked = [...checked];
-        if (currentIndex === -1) newChecked.push(value);
-        else newChecked.splice(currentIndex, 1);
-        setChecked(newChecked);
     };
 
 
@@ -86,7 +110,8 @@ const ADRPage = () => {
                 <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
                     <FormControl size="small" sx={{ minWidth: 250, bgcolor: 'white' }}>
                     <InputLabel id="patient-select-label">Select Patient</InputLabel>
-                    <Select
+                    <Select 
+                        sx={{ backgroundColor: 'background.default' }}
                         labelId="patient-select-label"
                         value={selectedId}
                         label="Select Patient"
@@ -105,8 +130,10 @@ const ADRPage = () => {
                         loadingPosition="start"
                         onClick={FetchPatientAnalysisData} 
                         variant="outlined" 
-                        size="small" 
-                        startIcon={<Assistant />}>Generate AI Assistant</Button>
+                        size="small"
+                        disabled={requiredFiles < 7} 
+                        startIcon={<Assistant />}>{(requiredFiles < 7 ? 'Incomplete Required Documents' : 'Generate AI Assistant')}
+                    </Button>
                 </Box>
 
 
@@ -197,7 +224,7 @@ const ADRPage = () => {
                         </Grid>
 
                         {/* Symptom Summary Card */}
-                        <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: '#f8f9fb' }}>
+                        <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: 'Background.default' }}>
                             <CardContent>
                                 <Typography variant="subtitle2" fontWeight="bold" gutterBottom>Symptom Summary (ADR lens):</Typography>
                                 <Typography variant="body2" component="ul" sx={{ pl: 2, color: 'text.secondary' }}>
@@ -283,7 +310,7 @@ const ADRPage = () => {
                                 <TableBody>
                                     {
                                         analysisData.benefit_period_evidence?.map((row:any, index:any) => (
-                                            <TableRow>
+                                            <TableRow key={index}>
                                                 <TableCell>{row.date}</TableCell>
                                                 <TableCell>{row.weight}</TableCell>
                                                 <TableCell>{row.bp_hr}</TableCell>
@@ -367,7 +394,7 @@ const ADRPage = () => {
 
                     {/* RIGHT: Document Checklist Sidebar */}
                     <Grid size={{ xs: 12, md: 3 }}>
-                        <DocumentListSidebar patientId={selectedId} />
+                        <DocumentListSidebar files={patientFiles} />
                     </Grid>
 
                 </Grid>

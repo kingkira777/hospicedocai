@@ -12,32 +12,19 @@ import {
 
 import { CheckCircle } from "@mui/icons-material";
 
-import { DOCUMENT_CHECKLIST } from "../../constant/documents";
-import api from "../../utils/axios";
+import { DOCUMENT_CHECKLIST, REQUIRED_DOCUMENTS } from "../../constant/documents";
+
 
 type Props = {
-    patientId: string | undefined
+    files: string[]
 }
 
-const DocumentListSidebar = ({ patientId }: Props) => {
-    const [checked, setChecked] = useState<string[]>(['Plan of Care', 'Visit Notes']);
-
-
-    const FetchFileByPatient = async () => {
-        try {
-            const { data } = await api.get(`/file/by-patient/${patientId}`);
-            console.log("Fetched file by patient:", data);
-            const files = data.map((file: any) => file.name);
-            console.log("files", files);
-            setChecked(files);
-        } catch (error) {
-            console.error("Error in FetchFileByPatient:", error);
-        }
-    };
+const DocumentListSidebar = ({ files }: Props) => {
+    const [checked, setChecked] = useState<string[]>([]);
 
     useEffect(() => {
-        if(patientId) FetchFileByPatient();
-    },[patientId])
+        setChecked(files);
+    },[files])
 
 
     return(
@@ -58,7 +45,7 @@ const DocumentListSidebar = ({ patientId }: Props) => {
                     />
                 </ListItemIcon>
                 <ListItemText 
-                    primary={value} 
+                    primary={<Typography variant="body2" color={(REQUIRED_DOCUMENTS.includes(value) ? 'error' : 'inherit')}>{value}</Typography>}
                     primaryTypographyProps={{ variant: 'body2', fontWeight: checked.includes(value) ? 'bold' : 'normal' }} 
                 />
                 {checked.includes(value) && <CheckCircle color="success" sx={{ fontSize: 16, mr: 2 }} />}

@@ -2,6 +2,7 @@ import {Table, Column, Model, DataType, BelongsTo, HasMany} from 'sequelize-type
 import Company from './company.model';
 import User from './user.model';
 import File from './files.model';
+import PatientADR from './patientAdr.model';
 
 @Table({
     paranoid : true,
@@ -97,6 +98,13 @@ class Patient extends Model {
         as : 'files'
     })
     files! : File[];
+
+    @HasMany(() => PatientADR,{
+        foreignKey : 'patientId',
+        sourceKey : 'id',
+        as : 'patientAdr'
+    })
+    patientAdr! : PatientADR[];
     
 }
 export default Patient;
