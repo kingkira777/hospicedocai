@@ -1,4 +1,6 @@
 import File from "../models/files.model";
+import path from "path";
+import fs from "fs";
 
 
 export type FileInput = {
@@ -11,38 +13,24 @@ export type FileInput = {
 
 class FileController {
 
-    GetFilesByPatientId = async (patientId: number) => {
+    GetFilesByPatientId = async (patientId: number, name ?: string) => {
         try {
+            let whereClause:any = { patientId: patientId };
+            if (name) {
+                whereClause.name = name;
+            }
             const files = await File.findAll({
-                where: {
-                    patientId: patientId
-                }
+                where:whereClause
             });
             return files;
         } catch (error) {
+            console.error("Error in FileController GetFilesByPatientId:", error);
             throw error;
         }
     };
 
     CreateFile = async (fileData: FileInput ) => {
         try {
-
-            const ifExists = await File.findOne({
-                where: {
-                    patientId: fileData.patientId,
-                    name: fileData.name
-                }
-            });
-            if (ifExists) {
-                //Update file
-                return await File.update(fileData, {
-                    where: {
-                        patientId: fileData.patientId,
-                        name: fileData.name
-                    }
-                }); 
-            }
-
             const file = await File.create(fileData);
             return file;
         } catch (error) {
@@ -50,6 +38,33 @@ class FileController {
         }
     };
 
+    CheckFileExists = async (patientId: number, name: string, fileName: string) => {
+        try {
+            const file = await File.findOne({ where: { patientId, name, fileName } });
+            return file !== null;
+        } catch (error) {
+            throw error;
+        }
+    };
+
+
+
+    DeleteFile = async (id: number) => {
+        try {
+            const file = await File.findByPk(id);
+            if (!file) {
+                throw new Error("File not found");
+            }
+            const filePath = path.join(__dirname, '../uploads', file.originalName);
+            if(fs.existsSync(filePath)){
+                fs.unlinkSync(filePath);
+            }
+            await file.destroy();
+            return true;
+        } catch (error) {
+            throw error;
+        }
+    };
 
 };
 

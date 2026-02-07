@@ -94,13 +94,12 @@ const DocumentSection = ({ title, fileTexts, files, patientId }: DocumentSection
     };
 
     return (
-        <ThemeProvider theme={theme}>
         <SectionContainer>
           <Typography variant="overline" sx={{ fontWeight: 'bold', display: 'block' }}>
             {title}
           </Typography>
 
-            {fileTexts.map((text, index) => (
+            {fileTexts.map((text:any, index) => (
                 <Grid container alignItems="center" sx={{ py: 1 }}>
                     <Grid size={{ xs: 4 }}>
                     <Typography variant="body2">{text}</Typography>
@@ -116,12 +115,11 @@ const DocumentSection = ({ title, fileTexts, files, patientId }: DocumentSection
                         Choose File
                         <input type="file" hidden onChange={(event) => handleFileChange(event, index)} />
                     </Button>
-                    <Typography variant="caption" sx={{ ml: 1 }}>{files?.filter((file) => file.name.trim() === text.trim())?.[0]?.originalName || (index === parseInt(uploadText.index, 10) ? uploadText.name : 'No file chosen')}</Typography>
+                        <Typography variant="caption" sx={{ ml: 1 }}>{files?.filter((file) => file.name.trim() === text.trim())?.[0]?.originalName || (index === parseInt(uploadText.index, 10) ? uploadText.name : 'No file chosen')}</Typography>
                     </Grid>
                 </Grid>
             ))}
         </SectionContainer>
-        </ThemeProvider>
     );
 };
 

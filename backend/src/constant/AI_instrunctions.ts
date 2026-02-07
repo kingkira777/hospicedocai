@@ -17,8 +17,8 @@ export const MEDICAL_SYSTEM_PROMPT = `
 export const ADR_SYSTEM_PROMPT = `
     # Role
     Analyze the medical PDFs. Return a JSON object ONLY.
-     CRITICAL: You must follow this EXACT nested structure. Do not flatten the categories. DO NOT include citations or source markers like "【4:18†source】" in any text field. 
-      Ensure findings and highlights are clean, professional sentences.
+    CRITICAL: You must follow this EXACT nested structure. Do not flatten the categories. DO NOT include citations or source markers like "【4:18†source】" in any text field. Ensure findings and highlights are clean, professional sentences.
+    CRITICAL: Only include documents in 'document_highlights' that actually exist in the provided text. If a Physician F2F is missing, list it in 'missing_documents' instead of highlights."
     {
         "patient_details":{
             "age" : number,
@@ -46,107 +46,107 @@ export const ADR_SYSTEM_PROMPT = `
           {
             "id": 1,
             "topic_name": "Hospice Eligibility & Decline",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 2,
             "topic_name": "Objective Measurements (Weight, MAC, PPS/KPS/FAST, Vitals)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 3,
             "topic_name": "Symptom Burden & Failure of Management (Pain/Dyspnea/Edema/etc.)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 4,
             "topic_name": "Utilization Necessity (Visits vs Orders vs Clinical Need)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 5,
             "topic_name": "Physician Narrative / F2F / Recert Credibility",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 6,
             "topic_name": "Diagnosis Integrity (Primary/Secondary, Recert Changes, Padding)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 7,
             "topic_name": " IDG Minutes Credibility (Comparisons, Deliberation, Updates)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 8,
             "topic_name": "Plan of Care Diagnosis Alignment (Problems/Goals/Interventions)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 9,
             "topic_name": "Nutritional Decline Evidence (Weight/MAC/Intake)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 10,
             "topic_name": "Medication Reconciliation & Safety (14-day, Opioid bowel regimen)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 11,
             "topic_name": "Supervisory Visits & Skilled Assessments (RN oversight integrity)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 12,
             "topic_name": "Visit Compliance (Ordered vs Performed; Variance Documentation)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 13,
             "topic_name": "Contradictions & Discrepancies (RN vs MD vs IDG vs POC)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 14,
             "topic_name": "Level of Care Congruence (RHC vs CHC/GIP Indicators)",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           },
           {
             "id": 15,
             "topic_name": "Discharge Avoidance / Long LOS Pattern Risk",
-            "status": "PASS || FAIL || NEEDS WORK",
-            "finding": "string",
-            "recommendation": "string"
+            "status": "PASS || FAIL || NEEDS WORK || NOT FOUND",
+            "finding": [], 
+            "recommendation": [] 
           }
         ],
         "symptoms_summary": ["string"],
@@ -156,5 +156,6 @@ export const ADR_SYSTEM_PROMPT = `
       
     IMPORTANT: Do not wrap the response in markdown code blocks. Start the response immediately with { and end with }.
     In 'document_highlights', ensure you provide a summary for ALL clinical note types found, especially Visit Notes, IDG Notes, and Assessments. Do not skip these.
+    In 'audit_topics', ensure you provide a finding and recommendation for ALL clinical note types found, especially Visit Notes, IDG Notes, and Assessments. Do not skip these.
 
 `;

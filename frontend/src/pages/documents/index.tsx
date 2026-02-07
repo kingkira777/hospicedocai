@@ -1,29 +1,23 @@
 import { PageContainer } from "@toolpad/core";
 import React, { useState, useEffect } from 'react';
 import { 
-  Box, 
-  Typography, 
-  Paper, 
   Grid, 
-  Button, 
-  styled,
-  Autocomplete,
-  TextField,
-  InputAdornment,
   Container
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 
-import DocumentSection from "../../components/documents/DocumentSection";
+import FileUploadComponent from "../../components/documents/FileUploadComponent";
+import FileList from "../../components/documents/FileList";
 import api from "../../utils/axios";
 import { useSession } from "../../SessionContext";
-import dayjs from "dayjs";
+import { ShowConfirm, ShowAlert } from "../../utils/sweetAlert";
+
 
 
 const DocumentsPage = () => {
   const { session } = useSession();
   const [selectedPatient, setSelectedPatient] = useState(null as any);
   const [patientList, setPatientList] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [files, setFiles] = useState([] as any[]);
 
   const FetchPatientSelectList = async () => {
@@ -49,7 +43,9 @@ const DocumentsPage = () => {
 
   const FetchFileByPatient = async (patientId: number) => {
     try {
-      const { data } = await api.get(`/file/by-patient/${patientId}`);
+      const { data } = await api.post(`/file/by-patient/${patientId}`,{
+        category: selectedCategory
+      });
       console.log("Fetched file by patient:", data);
       setFiles(data);
     } catch (error) {
@@ -62,87 +58,57 @@ const DocumentsPage = () => {
     if(selectedPatient){
       FetchFileByPatient(selectedPatient.id);
     }
-  }, [selectedPatient]);
+  }, [selectedPatient, selectedCategory]);
 
 
   useEffect(() => {
     FetchPatientSelectList();
   }, []);
 
+  const OnSuccess = (data: any) => {
+    FetchFileByPatient(selectedPatient.id);
+  }
+
+  
+  const DeleteFile = async (id: number) => {
+      ShowConfirm({
+          title: 'Are you sure?',
+          text: 'You will not be able to recover this file!',
+          icon: 'question',
+          fn: async (result : any) => {
+            if(result.isConfirmed){
+                try {
+                    const { data } = await api.post(`/file/delete/${id}`);
+                    ShowAlert({title: 'Deleted!', text: 'File has been deleted.', icon: 'success', isToast: true});
+                    FetchFileByPatient(selectedPatient.id);
+                } catch (error) {
+                    console.error("Error in FetchFileByPatient:", error);
+                    ShowAlert({title: 'Error', text: 'Failed to delete file.', icon: 'error', isToast: true});
+                }
+            }
+          }
+      });
+  };
 
   return (
     <PageContainer>
-        <Container maxWidth="md" sx={{ mt: 2, mb: 4 }}>
-        {/* 1. SELECT PATIENT HEADER */}
-        <Paper sx={{ p: 3, mb: 3, borderRadius: '12px' }}>
+
+        <Container maxWidth="lg" sx={{ mt: 2, mb: 4 }}>
           <Grid container spacing={2} alignItems="center">
+            <Grid size={{ xs: 12, md: 6 }} sx={{ borderLeft: { md: '1px solid #ddd' }, pl: { md: 4 } }}>
+              <FileList title={selectedCategory} files={files} deleteFile={DeleteFile} />
+            </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', color: '#1a3e72' }}>
-                Patient Record Access
-              </Typography>
-              <Autocomplete
-                options={patientList}
-                getOptionLabel={(option) => `${option.name} (${option.id})`}
-                value={selectedPatient}
-                onChange={(event, newValue) => {
-                  if (newValue) setSelectedPatient(newValue);
-                }}
-                renderInput={(params) => (
-                  <TextField 
-                    {...params} 
-                    label="Search and Select Patient" 
-                    variant="outlined"
-                    size="small"
-                    InputProps={{
-                      ...params.InputProps,
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon color="action" />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                )}
+              <FileUploadComponent 
+                patientList={patientList} 
+                selectedPatient={selectedPatient} 
+                setSelectedPatient={setSelectedPatient} 
+                setSelectedCategory={setSelectedCategory}
+                onSuccess={OnSuccess}
               />
             </Grid>
-            
-            {/* Dynamic Patient Info Header based on selection */}
-            <Grid size={{ xs: 12, md: 6 }} sx={{ borderLeft: { md: '1px solid #ddd' }, pl: { md: 4 } }}>
-              <Box>
-                <Typography variant="body2" color="textSecondary">Current Patient:</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                  {selectedPatient?.name} <Typography component="span" color="textSecondary">({selectedPatient?.id})</Typography>
-                </Typography>
-                <Typography variant="body2">
-                  <b>Date of Birth:</b> {(!selectedPatient)? '' : new Date(selectedPatient?.dateOfBirth).toLocaleDateString()} <br />
-                  <b>Gender:</b> {selectedPatient?.gender?.charAt(0).toUpperCase() + selectedPatient?.gender?.slice(1)}  <br />
-                  <b>SOC:</b> {(!selectedPatient)? '' : new Date(selectedPatient?.startOfCare).toLocaleDateString()}
-                </Typography>
-              </Box>
-            </Grid>
           </Grid>
-        </Paper>
-
-        {/* 2. DOCUMENT SECTIONS (As per original image) */}
-        {
-          (selectedPatient)? (
-            <>
-              <DocumentSection patientId={selectedPatient.id} files={files} title="Election & Certifications" fileTexts={['Election of Benefit', 'Initial Certification', 'Recertification']} />
-              <DocumentSection patientId={selectedPatient.id} files={files} title="Face-to-Face Encounter" fileTexts={['F2F Encounter', 'F2F Addendum']} />
-              <DocumentSection patientId={selectedPatient.id} files={files} title="Clinical Assessments" fileTexts={['RN Initial Assessment', 'Social Worker Initial Assessment', 'Chaplain Initial Assessment','Physician / Referring Notes']} />
-              <DocumentSection patientId={selectedPatient.id} files={files} title="IDG & Care Delivery" fileTexts={['Plan of Care', 'IDG Notes', 'Visit Notes', 'Phone Notes']} />
-              <DocumentSection patientId={selectedPatient.id} files={files} title="Medications & Diagnostics" fileTexts={['Medication List / MAR', 'Labs / Imaging']} />
-            </>
-          ) : (
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#1a3e72' }}>
-              Please select a patient to view and upload documents.
-            </Typography>
-          )
-        }
-
-        
       </Container>
-
     </PageContainer>
   );
 };

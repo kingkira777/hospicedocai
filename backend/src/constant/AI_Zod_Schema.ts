@@ -37,8 +37,8 @@ export const ADRRiskSchema = z.object({
         id: z.number(),
         topic_name: z.string(),
         status: z.enum(['PASS', 'FAIL', 'NEEDS WORK', 'NOT FOUND']).default('NOT FOUND'),
-        finding: z.string().nullable().optional().transform(val => val ?? "No data available in documents."),
-        recommendation: z.string().nullable().optional().transform(val => val ?? "N/A")
+        finding: z.array(z.string()).default([]),
+        recommendation:  z.array(z.string()).default([])
     })).default([]),
     benefit_period_evidence: z.array(z.object({
         date: z.string(),

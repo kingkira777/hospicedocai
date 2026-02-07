@@ -1,4 +1,7 @@
 import Patient from "../models/patient.model";
+import File from "../models/files.model";
+import path from "path";
+import fs from "fs";
 
 
 export type PatientInput = {
@@ -91,7 +94,25 @@ class PatientController {
 
     Remove = async (id: number) => {
         try {
-            const patient = await Patient.findByPk(id);
+            const patient = await Patient.findOne({ 
+                where: { id },
+                include :[
+                    {                        
+                        model : File,
+                        as : 'files'                        
+                    }
+                ] 
+            });
+
+            if (patient?.files && patient.files.length > 0) {
+                for (const file of patient.files) {
+                    const filePath = path.join(__dirname, `../uploads/${file.fileName}`); //'../uploads/file-1769828852608-998799239.pdf';
+                    if(fs.existsSync(filePath)){
+                        fs.unlinkSync(filePath);
+                    }
+                }
+            }
+
             if (!patient) {
                 throw new Error("Patient not found");
             }

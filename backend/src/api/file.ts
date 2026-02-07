@@ -29,11 +29,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
     storage: storage,
-    fileFilter: (req, file, cb) => {
+    fileFilter: async (req, file, cb) => {
         const filetypes = /pdf|jpeg|jpg|png/; // Regular expression for allowed extensions
         const mimetype = filetypes.test(file.mimetype); // Test against file's MIME type
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase()); // Test against file's extension
-        if (mimetype && extname) {
+        const isExist = await fileCtrl.CheckFileExists(parseInt(req.body.patientId, 10), req.body.name, file.originalname);
+        if (isExist) {
+            return cb(new Error('Error: File already exists!'));
+        }else if (mimetype && extname) {
             return cb(null, true); 
         } else {
             cb(new Error('Error: Only image files (PDF, JPEG, JPG, PNG) are allowed!'));
@@ -53,7 +56,6 @@ router.post("/upload", upload.single('file'), async(req,res) => {
             name: fileData.name,
             originalName: req.file.originalname,
             fileName: req.file.filename,
-            companyId: parseInt(fileData.companyId, 10),
             filePath: req.file.path,
             userId: parseInt(fileData.userId, 10)
         }
@@ -66,11 +68,22 @@ router.post("/upload", upload.single('file'), async(req,res) => {
 });
 
 
-router.get("/by-patient/:patientId", async(req,res) => {
+router.post("/by-patient/:patientId", async(req,res) => {
     try {
         const patientId = parseInt(req.params.patientId, 10);
-        const files = await fileCtrl.GetFilesByPatientId(patientId);
+        const name = req.body.category;
+        const files = await fileCtrl.GetFilesByPatientId(patientId, name);
         res.json(files);
+    } catch (error) {
+        res.status(400).json({ error: (error as Error).message });
+    }
+});
+
+router.post('/delete/:id', async(req,res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const file = await fileCtrl.DeleteFile(id);
+        res.json(file);
     } catch (error) {
         res.status(400).json({ error: (error as Error).message });
     }

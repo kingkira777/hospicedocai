@@ -46,6 +46,7 @@ const ADRPage = () => {
             if(selectedId === '0') return;
             const { data } = await api.get(`/adr/data/${selectedId}`);
             console.log("Fetched saved ADR data:", data);
+            if(data === null || data === 'null') return;
             setAnalysisData(data);
         } catch (error) {
             console.error("Error in FetchSavedAdrData:", error);
@@ -54,7 +55,7 @@ const ADRPage = () => {
 
     const FetchFilesByPatient = async () => {
         try {
-            const { data } = await api.get(`/file/by-patient/${selectedId}`);
+            const { data } = await api.post(`/file/by-patient/${selectedId}`);
             console.log("Fetched file by patient:", data);
             const files = data.map((file: any) => file.name);
             const filteredFiles = files.filter((file: any) => REQUIRED_DOCUMENTS.includes(file));
@@ -131,7 +132,7 @@ const ADRPage = () => {
                         onClick={FetchPatientAnalysisData} 
                         variant="outlined" 
                         size="small"
-                        disabled={requiredFiles < 7} 
+                        // disabled={requiredFiles < 7} 
                         startIcon={<Assistant />}>{(requiredFiles < 7 ? 'Incomplete Required Documents' : 'Generate AI Assistant')}
                     </Button>
                 </Box>
@@ -381,9 +382,13 @@ const ADRPage = () => {
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Typography variant="caption" display="block" color="text.secondary" gutterBottom>FINDING:</Typography>
-                                <Typography variant="body2" sx={{ mb: 2 }}>{topic.finding}</Typography>
+                                <Typography variant="caption" component="ul" sx={{ pl: 2 }}>
+                                    {topic.finding.map((h:any, i:any) => <li key={i}>{h}</li>)}
+                                </Typography>
                                 <Typography variant="caption" display="block" color="primary" fontWeight="bold">RECOMMENDATION:</Typography>
-                                <Typography variant="body2">{topic.recommendation}</Typography>
+                                <Typography variant="caption" component="ul" sx={{ pl: 2 }}>
+                                    {topic.recommendation.map((h:any, i:any) => <li key={i}>{h}</li>)}
+                                </Typography>
                             </AccordionDetails>
                             </Accordion>
                         ))}
