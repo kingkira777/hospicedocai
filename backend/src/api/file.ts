@@ -2,8 +2,9 @@ import express = require('express');
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-
 import fileCtrl from "../controller/file.ctrl";
+import { DOCUMENTS } from '../constant/AI_Documents';
+import DocumentCategoryAI from '../utils/API_DocumentCategoryAI';
 
 const router = express.Router();
 
@@ -33,7 +34,7 @@ const upload = multer({
         const filetypes = /pdf|jpeg|jpg|png/; // Regular expression for allowed extensions
         const mimetype = filetypes.test(file.mimetype); // Test against file's MIME type
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase()); // Test against file's extension
-        const isExist = await fileCtrl.CheckFileExists(parseInt(req.body.patientId, 10), req.body.name, file.originalname);
+        const isExist = await fileCtrl.CheckFileExists(parseInt(req.body.patientId, 10), file.originalname);
         if (isExist) {
             return cb(new Error('Error: File already exists!'));
         }else if (mimetype && extname) {
@@ -45,24 +46,32 @@ const upload = multer({
 });
 
 
-router.post("/upload", upload.single('file'), async(req,res) => {
+router.post("/upload", upload.array('files',30), async(req,res) => {
     try {
-        if(!req.file){
+        // console.log(req.files);
+        if(req.files?.length === 0) {
             return res.status(400).json({ error: "No file uploaded." });
         }
-        const fileData = req.body;
-        const fileDataToSave = {
-            patientId: parseInt(fileData.patientId, 10),
-            name: fileData.name,
-            originalName: req.file.originalname,
-            fileName: req.file.filename,
-            filePath: req.file.path,
-            userId: parseInt(fileData.userId, 10)
+        const fileCategories = await DocumentCategoryAI(req.files);
+        if(fileCategories?.length === 0) {
+            return res.status(400).json({ error: "No file category found." });
         }
-        console.log('File data to be saved:', fileDataToSave);
-        const file = await fileCtrl.CreateFile(fileDataToSave);
-        res.json(file);
+        for(const file of fileCategories as any) {
+            const fileData = req.body;
+            const fileDataToSave = {
+                patientId: parseInt(fileData.patientId, 10),
+                category: file.category.split(":")[0],
+                fileName: file.fileName,
+                filePath: file.path,
+                userId: parseInt(fileData.userId, 10)
+            }
+            console.log('File data to be saved:', fileDataToSave);
+            await fileCtrl.CreateFile(fileDataToSave);
+        }
+
+        res.json({message : "File uploaded successfully."});
     } catch (error) {
+        console.log(error);
         res.status(400).json({ error: (error as Error).message });
     }
 });
@@ -71,8 +80,8 @@ router.post("/upload", upload.single('file'), async(req,res) => {
 router.post("/by-patient/:patientId", async(req,res) => {
     try {
         const patientId = parseInt(req.params.patientId, 10);
-        const name = req.body.category;
-        const files = await fileCtrl.GetFilesByPatientId(patientId, name);
+        const category = req.body.category;
+        const files = await fileCtrl.GetFilesByPatientId(patientId, category);
         res.json(files);
     } catch (error) {
         res.status(400).json({ error: (error as Error).message });

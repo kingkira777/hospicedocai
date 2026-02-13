@@ -9,6 +9,7 @@ import PatientsPage from './pages/patients/index';
 import CasesPage from './pages/cases';
 import DocumentsPage from './pages/documents';
 import ADRPage from './pages/adr';
+import MedicalNotesAnalysisApp from './pages/notes';
 
 import UserPage from './pages/users';
 
@@ -34,6 +35,14 @@ const router = createBrowserRouter([
                 <DashboardPage />
               </ProtectedRoute>
             ),
+          },
+          {
+            path: 'notes',
+            Component: () => (
+              <ProtectedRoute allowedRoles={['admin', 'user']}>
+                <MedicalNotesAnalysisApp />
+              </ProtectedRoute>
+            ),
           }
         ],
       },
@@ -52,19 +61,11 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: 'cases',
+        path: 'documents',
         Component: Layout,
         children: [
           {
             path: '',
-            Component: () => (
-              <ProtectedRoute allowedRoles={['admin', 'user']}>
-                <CasesPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: 'documents',
             Component: () => (
               <ProtectedRoute allowedRoles={['admin', 'user']}>
                 <DocumentsPage />

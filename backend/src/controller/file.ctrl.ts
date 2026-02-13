@@ -5,7 +5,7 @@ import fs from "fs";
 
 export type FileInput = {
     patientId: number;
-    name: string;
+    category: string;
     fileName: string;
     filePath: string;
     userId: number;
@@ -13,11 +13,11 @@ export type FileInput = {
 
 class FileController {
 
-    GetFilesByPatientId = async (patientId: number, name ?: string) => {
+    GetFilesByPatientId = async (patientId: number, category ?: string) => {
         try {
             let whereClause:any = { patientId: patientId };
-            if (name) {
-                whereClause.name = name;
+            if (category) {
+                whereClause.category = category;
             }
             const files = await File.findAll({
                 where:whereClause
@@ -38,9 +38,18 @@ class FileController {
         }
     };
 
-    CheckFileExists = async (patientId: number, name: string, fileName: string) => {
+    FindOneFile = async (id: number) => {
         try {
-            const file = await File.findOne({ where: { patientId, name, fileName } });
+            const file = await File.findByPk(id);
+            return file;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    CheckFileExists = async (patientId: number, fileName: string) => {
+        try {
+            const file = await File.findOne({ where: { patientId, fileName } });
             return file !== null;
         } catch (error) {
             throw error;
@@ -55,7 +64,7 @@ class FileController {
             if (!file) {
                 throw new Error("File not found");
             }
-            const filePath = path.join(__dirname, '../uploads', file.originalName);
+            const filePath = path.join(__dirname, '../uploads', file.fileName);
             if(fs.existsSync(filePath)){
                 fs.unlinkSync(filePath);
             }

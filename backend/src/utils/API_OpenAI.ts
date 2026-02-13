@@ -10,6 +10,10 @@ const openai = new OpenAI({
 
 const MedicalExtractionSchema = z.object({
   file_name: z.string().describe("Name of the file"),
+  risk : z.object({
+      level: z.enum(['Low', 'Medium', 'High']),
+      justification: z.string(),
+  }),
   summary: z.object({
     is_documented: z.boolean(),
     visit_date: z.string().nullable(),
@@ -23,7 +27,7 @@ const MedicalExtractionSchema = z.object({
   indicators_of_decline: z.array(z.string()).describe("Any mention of worsening symptoms"),
   suggested_care_plan_updates: z.array(z.string()),
   hallucination_check: z.string().describe("Direct quote from the PDF used for this summary"),
-  narrative: z.string().describe("Check if the summary is correct or incorrect and related to whole document, Answer it with accurate or not then follow up with a summary of the findings"),
+  narrative: z.string().describe("Check if the summary is correct or incorrect and related to whole document, Answer it with relevant/irrelevant and then follow up with a summary of the findings"),
   missing : z.string().describe("Any mention of missing data"),
   strengthen_the_case : z.string().describe("Give a suggestion or advice to strengthen the case if the documents is incomplete or inconsistent"),
   non_rn_notes: z.string().describe("Summary if not a RN Notes"),

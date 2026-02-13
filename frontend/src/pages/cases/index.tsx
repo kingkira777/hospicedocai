@@ -2,7 +2,7 @@ import { PageContainer } from "@toolpad/core";
 import { useEffect, useState } from 'react';
 import {
   Box, Container, Typography, Paper, Grid, Autocomplete, TextField,
-  Chip, Stack, styled
+  Chip, Stack, styled, Divider
 } from '@mui/material';
 import {
     Info, Warning
@@ -12,6 +12,7 @@ import DocumentChecklist from "../../components/cases/DocumentChecklist";
 import ChatBox from "../../components/cases/ChatBox";
 import api from "../../utils/axios";
 import { useSession } from "../../SessionContext";
+import MedicalAnalysisApp from "../../components/cases/DocumentAnalysis";
 
 const SidebarCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -163,6 +164,9 @@ const CasesPage = () => {
                     </Grid>
                 </Container>
                 </Box>
+                
+                      <Divider />
+                      <MedicalAnalysisApp />
         </PageContainer>
     );
 };

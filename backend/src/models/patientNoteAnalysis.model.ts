@@ -1,14 +1,14 @@
-import {Table, Column, Model, DataType, BelongsTo, HasMany} from 'sequelize-typescript';
+import {Table, Column, Model, DataType, BelongsTo} from 'sequelize-typescript';
 import Patient from './patient.model';
 
 @Table({
     paranoid : true,
     timestamps: true,
-    tableName : 'Files',
+    tableName : 'PatientNoteAnalysis',
     createdAt : false,
     updatedAt : false
 })
-class File extends Model {
+class PatientNoteAnalysis extends Model {
     @Column({
         type : DataType.INTEGER,
         autoIncrement : true,
@@ -26,19 +26,13 @@ class File extends Model {
         type : DataType.STRING,
         allowNull : false
     })
-    category! : string;
-
-    @Column({
-        type : DataType.STRING,
-        allowNull : false
-    })
-    fileName! : string;
+    note! : string;
 
     @Column({
         type : DataType.TEXT,
-        allowNull : false
+        allowNull : true
     })
-    filePath! : string;
+    data! : string;
     
     @Column({
         type : DataType.INTEGER,
@@ -70,4 +64,4 @@ class File extends Model {
     patient! : Patient;
     
 }
-export default File;
+export default PatientNoteAnalysis;

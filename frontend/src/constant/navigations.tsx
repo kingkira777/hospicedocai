@@ -27,7 +27,7 @@ const getNavigation = (session: Session | null): Navigation => {
         pattern: '/patients',
       },
       {
-        segment: 'cases/documents',
+        segment: 'documents',
         title: 'Documents',
         icon: <BackupTableOutlined />,
         pattern: '/cases/documents',
@@ -37,16 +37,16 @@ const getNavigation = (session: Session | null): Navigation => {
         title: 'Analytics',
       },
       {
-        segment: 'cases',
-        title: 'Quality Cases',
-        icon: <DescriptionIcon />,
-        pattern: '/cases',
-      },
-      {
         segment: 'adr',
         title: 'ADR Analysis',
         icon: <DescriptionIcon />,
         pattern: '/adr',
+      },
+      {
+        segment: 'notes',
+        title: 'RN Notes Analysis',
+        icon: <DescriptionIcon />,
+        pattern: '/notes',
       },
       
     ];

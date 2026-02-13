@@ -2,7 +2,11 @@ import { PageContainer } from "@toolpad/core";
 import React, { useState, useEffect } from 'react';
 import { 
   Grid, 
-  Container
+  Container,
+  Divider,
+  Box,
+  TextField,
+  MenuItem,
 } from '@mui/material';
 
 import FileUploadComponent from "../../components/documents/FileUploadComponent";
@@ -10,8 +14,11 @@ import FileList from "../../components/documents/FileList";
 import api from "../../utils/axios";
 import { useSession } from "../../SessionContext";
 import { ShowConfirm, ShowAlert } from "../../utils/sweetAlert";
+import MedicalAnalysisApp from "../../components/cases/DocumentAnalysis";
+import { DOCUMENT_CHECKLIST } from "../../constant/documents";
 
 
+type Category = typeof DOCUMENT_CHECKLIST[number];
 
 const DocumentsPage = () => {
   const { session } = useSession();
@@ -19,6 +26,7 @@ const DocumentsPage = () => {
   const [patientList, setPatientList] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [files, setFiles] = useState([] as any[]);
+  const [category, setCategory] = useState('');
 
   const FetchPatientSelectList = async () => {
     try {
@@ -96,6 +104,23 @@ const DocumentsPage = () => {
         <Container maxWidth="lg" sx={{ mt: 2, mb: 4 }}>
           <Grid container spacing={2} alignItems="center">
             <Grid size={{ xs: 12, md: 6 }} sx={{ borderLeft: { md: '1px solid #ddd' }, pl: { md: 4 } }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              {/* Category Selection */}
+                <TextField
+                  select
+                  label="Document Category"
+                  value={category}
+                  onChange={(e) => setSelectedCategory(e.target.value as Category)}
+                  fullWidth
+                >
+                  <MenuItem value="">All</MenuItem>
+                  {DOCUMENT_CHECKLIST.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Box>
               <FileList title={selectedCategory} files={files} deleteFile={DeleteFile} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -103,7 +128,6 @@ const DocumentsPage = () => {
                 patientList={patientList} 
                 selectedPatient={selectedPatient} 
                 setSelectedPatient={setSelectedPatient} 
-                setSelectedCategory={setSelectedCategory}
                 onSuccess={OnSuccess}
               />
             </Grid>
