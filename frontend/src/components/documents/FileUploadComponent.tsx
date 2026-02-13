@@ -32,6 +32,7 @@ const FileUploadComponent = ({patientList, selectedPatient, setSelectedPatient, 
 
   const { session } = useSession();
   const [files, setFiles] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     console.log(event.target.files);
@@ -51,6 +52,7 @@ const FileUploadComponent = ({patientList, selectedPatient, setSelectedPatient, 
         formData.append('files', file);
       });
       try {
+          setIsLoading(true);
           const { data } = await api.post('/file/upload', formData, {
               headers: {
                   'Content-Type': 'multipart/form-data',
@@ -60,6 +62,7 @@ const FileUploadComponent = ({patientList, selectedPatient, setSelectedPatient, 
           ShowAlert({title: 'Success', text: 'File uploaded successfully', icon: 'success', isToast: true});
           setFiles([]);
           onSuccess(data);
+          setIsLoading(false);
       } catch (error:any) {
           console.error('Error uploading file:', error.message.toString());
           ShowAlert({title: 'Error', text: 'Failed to upload file or File is already uploaded', icon: 'error', isToast: true});
@@ -140,6 +143,7 @@ const FileUploadComponent = ({patientList, selectedPatient, setSelectedPatient, 
 
         {/* Submit Button */}
         <Button
+          loading={isLoading}
           variant="contained"
           disabled={files.length === 0}
           onClick={handleUpload}

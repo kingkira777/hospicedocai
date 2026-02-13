@@ -24,9 +24,8 @@ const DocumentsPage = () => {
   const { session } = useSession();
   const [selectedPatient, setSelectedPatient] = useState(null as any);
   const [patientList, setPatientList] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [files, setFiles] = useState([] as any[]);
-  const [category, setCategory] = useState('');
 
   const FetchPatientSelectList = async () => {
     try {
@@ -52,7 +51,7 @@ const DocumentsPage = () => {
   const FetchFileByPatient = async (patientId: number) => {
     try {
       const { data } = await api.post(`/file/by-patient/${patientId}`,{
-        category: selectedCategory
+        category: (selectedCategory === 'all') ? null : selectedCategory
       });
       console.log("Fetched file by patient:", data);
       setFiles(data);
@@ -109,11 +108,11 @@ const DocumentsPage = () => {
                 <TextField
                   select
                   label="Document Category"
-                  value={category}
+                  value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value as Category)}
                   fullWidth
                 >
-                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="all">All</MenuItem>
                   {DOCUMENT_CHECKLIST.map((option) => (
                     <MenuItem key={option} value={option}>
                       {option}

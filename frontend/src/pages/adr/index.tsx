@@ -57,7 +57,7 @@ const ADRPage = () => {
         try {
             const { data } = await api.post(`/file/by-patient/${selectedId}`);
             console.log("Fetched file by patient:", data);
-            const files = data.map((file: any) => file.name);
+            const files = data.map((file: any) => file.category);
             const filteredFiles = files.filter((file: any) => REQUIRED_DOCUMENTS.includes(file));
             setRequiredFiles(filteredFiles.length);
             setPatientFiles(files);
