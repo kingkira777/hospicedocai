@@ -204,5 +204,5 @@ export const DOCUMENT_CATEGORY = `
       Step 1: Scan the first 3-5 lines of the text for a Document Title.
       Step 2: Look for IDG indicators (e.g., "Meeting Date," "Members Present," "IDT Review").
       Step 3: If multiple types are present, categorize by the Primary Document Intent identified in the title.
-      Return only the Category Name.
+      Step 4: Output Formatting: Return ONLY the plain text of the category name. Do NOT include the number, do NOT include a period, and do NOT include any introductory text (e.g., do not say "The category is:").
 `;
