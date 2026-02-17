@@ -1,12 +1,8 @@
-import OpenAI from "openai";
 import fs from "fs";
-import { file, z } from "zod";
+import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod";
-import { MEDICAL_SYSTEM_PROMPT } from "../constant/AI_instrunctions";
-
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+import { MEDICAL_SYSTEM_PROMPT } from "../constant/AI_instructions";
+import openai from "./OpenAI";
 
 const MedicalExtractionSchema = z.object({
   file_name: z.string().describe("Name of the file"),
@@ -41,12 +37,7 @@ const MultiFileResponseSchema = z.object({
 
 const analyzeMultipleRNNotes = async (pdfPaths: string[]) => {
     try {
-        // 1. Create a persistent Conversation object
-        const conversation = await openai.conversations.create();
-        const convId = conversation.id;
-
-        // 1. Upload all files in parallel
-        console.log(`Uploading ${pdfPaths.length} medical files...`);
+     
         const uploadedFiles = await Promise.all(
             pdfPaths.map(async (path) => {
             const file = await openai.files.create({
@@ -77,7 +68,6 @@ const analyzeMultipleRNNotes = async (pdfPaths: string[]) => {
                         "auto_delete_after": "30" // 1 hour (3600 seconds)
                     },
                     model: "gpt-4o",
-                    conversation : convId,
                     input: [
                         {
                             role: "developer",
@@ -108,8 +98,17 @@ const analyzeMultipleRNNotes = async (pdfPaths: string[]) => {
                 
             }
         }
+
+        // 4. Return the analysis results
         const finalResults = JSON.parse(analysisResult.output_text);
-        return { convId, finalResults };
+
+        // 5. Clean up uploaded files
+        await Promise.all(
+            uploadedFiles.map(async (fileId) => {
+                await openai.files.delete(fileId);
+            })
+        )
+        return { convId: null, finalResults };
     } catch (error) {
         console.error("Error in AnalyzeMedicalPaper:", error);
         throw error;   

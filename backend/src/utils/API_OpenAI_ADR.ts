@@ -1,14 +1,8 @@
-import OpenAI from "openai";
 import fs from "fs";
 import z from "zod";
-import { ADR_SYSTEM_PROMPT } from "../constant/AI_instrunctions";
+import { ADR_SYSTEM_PROMPT } from "../constant/AI_instructions";
 import { ADRRiskSchema, ADRRiskData } from "../constant/AI_Zod_Schema";
-import { text } from "stream/consumers";
-
-
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+import openai from "./OpenAI";
 
 
 const AnalyzeAdrMedicalRisk = async  (filePaths:string[]): Promise<ADRRiskData | null> => {

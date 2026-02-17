@@ -1,6 +1,6 @@
 import openai from "./OpenAI";
 const { pdf } = require('pdf-to-img');
-import { DOCUMENT_CATEGORY } from "../constant/AI_instrunctions";
+import { DOCUMENT_CATEGORY } from "../constant/AI_instructions";
 
 
 const DocumentCategoryAI = async (files:any) => {
