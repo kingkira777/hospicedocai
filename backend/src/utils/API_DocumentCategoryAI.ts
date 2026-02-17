@@ -32,13 +32,20 @@ const DocumentCategoryAI = async (files:any) => {
                     {
                         role: "user",
                         content: [
-                            { type: "text", text: "Analyze this hospice document and categorize it into exactly one of the categories provided in the list. Return ONLY the category name." },
-                            { type: "image_url", image_url: { url: `data:image/png;base64,${base64Image}`} }
+                            { 
+                                type: "text", 
+                                text: `Analyze this hospice document and categorize it into exactly one of the categories provided in the list. Return ONLY the category name.` 
+                            },
+                            { 
+                                type: "image_url", 
+                                image_url: { url: `data:image/png;base64,${base64Image}`, detail:'low'} 
+                            }
                         ]
                     }
                 ],
                 temperature:0
             });
+
             return {
                 fileName: file.originalname,
                 category: response.choices[0].message.content.trim(),

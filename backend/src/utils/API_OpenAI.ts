@@ -105,7 +105,12 @@ const analyzeMultipleRNNotes = async (pdfPaths: string[]) => {
         // 5. Clean up uploaded files
         await Promise.all(
             uploadedFiles.map(async (fileId) => {
-                await openai.files.delete(fileId);
+                try {
+                    console.log(`Deleting file ${fileId}`);
+                    await openai.files.delete(fileId);
+                } catch (delError) {
+                    console.error(`Failed to delete file ${fileId}:`, delError);
+                }
             })
         )
         return { convId: null, finalResults };

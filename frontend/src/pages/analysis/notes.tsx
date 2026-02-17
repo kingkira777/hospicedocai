@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { PageContainer } from '@toolpad/core';
 import { 
   Container, Grid, Paper, Typography, MenuItem, 
   FormControl, InputLabel, Select, Box, Divider, Chip, CircularProgress, Button
@@ -138,7 +139,8 @@ const MedicalNotesAnalysisApp = () => {
     
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <PageContainer title=''>
+        <Container maxWidth="lg">
             <Paper sx={{ p: 3, minHeight: '450px', position: 'relative' }}>
         <Typography variant="h6" gutterBottom fontWeight="bold" color="primary">
             RN Notes Analysis
@@ -272,6 +274,7 @@ const MedicalNotesAnalysisApp = () => {
         </Grid>
         </Paper>
         </Container>
+        </PageContainer>
     );
 };
 

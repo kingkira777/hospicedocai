@@ -8,8 +8,13 @@ import PatientsPage from './pages/patients/index';
 
 import CasesPage from './pages/cases';
 import DocumentsPage from './pages/documents';
-import ADRPage from './pages/adr';
-import MedicalNotesAnalysisApp from './pages/notes';
+import ADRPage from './pages/analysis/adr';
+import MedicalNotesAnalysisApp from './pages/analysis/notes';
+
+//Analysis
+import RiskAnalysisApp from './pages/analysis/risk';
+
+
 
 import UserPage from './pages/users';
 
@@ -33,14 +38,6 @@ const router = createBrowserRouter([
             Component: () => (
               <ProtectedRoute>
                 <DashboardPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: 'notes',
-            Component: () => (
-              <ProtectedRoute allowedRoles={['admin', 'user']}>
-                <MedicalNotesAnalysisApp />
               </ProtectedRoute>
             ),
           }
@@ -75,18 +72,34 @@ const router = createBrowserRouter([
         ],
       },
       {
-        'path': 'adr',
-        'Component': Layout,
-        'children': [
+        path: 'analysis',
+        Component: Layout,
+        children: [
           {
-            'path': '',
-            'Component': () => (
+            path: 'risk',
+            Component: () => (
+              <ProtectedRoute allowedRoles={['admin', 'user']}>
+                <RiskAnalysisApp />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'notes',
+            Component: () => (
+              <ProtectedRoute allowedRoles={['admin', 'user']}>
+                <MedicalNotesAnalysisApp />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'adr',
+            Component: () => (
               <ProtectedRoute allowedRoles={['admin', 'user']}>
                 <ADRPage />
               </ProtectedRoute>
             ),
           }
-        ]
+        ],
       },
       {
         path: 'users',

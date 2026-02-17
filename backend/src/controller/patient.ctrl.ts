@@ -56,7 +56,15 @@ class PatientController {
 
             const countPatients = await Patient.count({ where: { companyId: data.companyId } });
             if (countPatients >= 15) {
-                return false;
+                return 'exceeded';
+            }
+
+            const checkPatient = await Patient.findOne({ 
+                where: { companyId: data.companyId, firstName: data.firstName, lastName: data.lastName, startOfCare: data.startOfCare }, 
+            });
+
+            if (checkPatient) {
+                return 'exists';
             }
 
             const newPatient = await Patient.create(data);

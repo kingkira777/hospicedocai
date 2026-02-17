@@ -33,9 +33,14 @@ router.post("/create", async(req,res) => {
     try {
         const patientData = req.body;
         const patient = await patientCtrl.Create(patientData);
-        if(!patient){
+        if(patient === 'exceeded'){
             return res.json({ message: "Patient limit reached for this company." });
         }
+
+        if(patient === 'exists'){
+            return res.json({ message: "Patient and SOC already exists." });
+        }
+
         res.json(patient);
     } catch (error) {
         res.status(400).json({ error: (error as Error).message });

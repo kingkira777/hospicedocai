@@ -104,7 +104,7 @@ const ADRPage = () => {
 
 
     return (
-        <PageContainer>
+        <PageContainer title={''}>
 
             <Box sx={{ p: 3, bgcolor: 'background.default', minHeight: '100vh' }}>
                 {/* Patient Selector Header */}

@@ -34,19 +34,25 @@ const getNavigation = (session: Session | null): Navigation => {
       },
       {
         kind: 'header',
-        title: 'Analytics',
+        title: 'Analysis',
       },
       {
-        segment: 'adr',
-        title: 'ADR Analysis',
+        segment: 'analysis/adr',
+        title: 'ADR',
         icon: <DescriptionIcon />,
-        pattern: '/adr',
+        pattern: 'analysis/adr',
       },
       {
-        segment: 'notes',
-        title: 'RN Notes Analysis',
+        segment: 'analysis/risk',
+        title: 'Risk',
         icon: <DescriptionIcon />,
-        pattern: '/notes',
+        pattern: 'analysis/risk',
+      },
+      {
+        segment: 'analysis/notes',
+        title: 'RN Notes',
+        icon: <DescriptionIcon />,
+        pattern: 'analysis/notes',
       },
       
     ];

@@ -80,7 +80,7 @@ const AddUpdatePatientModal = ({ payload, open, onClose }: DialogProps<PatientPa
             }
             const { data } = await api.post('/patient/create', formData);
             if(data.message){
-                ShowAlert({title: 'Limit Reached', text: data.message, icon: 'warning', isToast: true});
+                ShowAlert({title: data.message, text: data.message, icon: 'warning', isToast: true});
                 onClose();
                 return;
             }

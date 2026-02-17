@@ -119,7 +119,7 @@ const PatientsPage = () => {
   const handleAddPatient = async () => {
     const add:any = await dialogs.open(AddUpdatePatientModal,{});
     console.log('Dialog result:', add);
-    if(add.id){
+    if(add !== undefined && add.id){
       FetchPatients(parseInt(session?.user.companyId || '0', 10));
     }
   };
@@ -127,7 +127,7 @@ const PatientsPage = () => {
   const handleUpdatePatient = async (patient:any) => {
     const update:any = await dialogs.open(AddUpdatePatientModal, patient);
     console.log('Dialog result:', update);
-    if(update.id){
+    if( update !== undefined && update.id){
       FetchPatients(parseInt(session?.user.companyId || '0', 10));
     }
   };
