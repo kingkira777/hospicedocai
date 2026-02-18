@@ -34,7 +34,7 @@ export default function App() {
 
   const signOut = React.useCallback(() => {
     setSession(null);
-    navigate('/sign-in');
+    navigate('/home');
   }, [navigate, setSession]);
 
 

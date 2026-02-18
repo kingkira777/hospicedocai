@@ -98,7 +98,7 @@ const PATIENT_DATA_STORE: any[] = [
 
 const RiskAnalysisApp = () => {
     const { session  } = useSession();
-    const [selectedPatients, setSelectedPatients] = useState<any[]>([]);
+    const [selectedPatients, setSelectedPatients]:any = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [patientList, setPatientList] = useState([]);
 
@@ -128,21 +128,20 @@ const RiskAnalysisApp = () => {
         FetchPatientSelectList();
     }, []);
 
-    // 1. Filter options so already selected patients don't show up in the search list
-    const availableOptions = patientList.filter(
-        (patient:any) => !selectedPatients.find((s) => s.id === patient?.id)
-    );
-    // Simulate a loading delay whenever patients are added
-    const handleSelectionChange = async (event: any, newValue: any[]) => {
-        if (newValue.length > selectedPatients.length) {
-        setIsLoading(true);
-        const { data } = await api.post(`/analysis/denial-risk/${newValue[newValue.length - 1].id}`);   
-        console.log("Fetched patient analysis data:", data);
-        setIsLoading(false);
-        } else {
-            setSelectedPatients(newValue);
+    const handleSelectionChange = async (event: any, newValue: any) => {
+        try {
+            if(newValue.id === undefined) return;
+            setIsLoading(true);
+            const { data } = await api.post(`/analysis/denial-risk/${newValue.id}`);   
+            console.log("Fetched patient analysis data:", data);
+            setSelectedPatients(data);
+            setIsLoading(false);
+        } catch (error) {
+            console.error("Error in handleSelectionChange:", error);
+            setIsLoading(false);
         }
     };
+
 
     return (
         <PageContainer title="">
@@ -153,9 +152,8 @@ const RiskAnalysisApp = () => {
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
                 <PersonSearch color="primary" sx={{ display: { xs: 'none', md: 'block' } }} />
                 <Autocomplete
-                    multiple
                     fullWidth
-                    options={availableOptions}
+                    options={patientList}
                     getOptionLabel={(option:any) => option.name}
                     onChange={handleSelectionChange}
                     renderInput={(params) => (
@@ -190,14 +188,14 @@ const RiskAnalysisApp = () => {
             )}
 
             {/* RESULTS LIST */}
-            {!isLoading && selectedPatients.map((patient:any) => (
-                <Accordion key={patient.id} defaultExpanded sx={{ mb: 2, borderRadius: '8px !important', '&:before': { display: 'none' }, border: '1px solid #e0e0e0' }}>
+            {!isLoading && selectedPatients &&(
+                <Accordion key={0} defaultExpanded sx={{ mb: 2, borderRadius: '8px !important', '&:before': { display: 'none' }, border: '1px solid #e0e0e0' }}>
                     <AccordionSummary expandIcon={<ExpandMore />}>
                     <Stack direction="row" spacing={2} alignItems="center">
-                        <Avatar sx={{ bgcolor: 'primary.light', width: 32, height: 32, fontSize: '0.9rem' }}>{patient.name[0]}</Avatar>
+                        <Avatar sx={{ bgcolor: 'primary.light', width: 32, height: 32, fontSize: '0.9rem' }}>{selectedPatients.patientInfo.name}</Avatar>
                         <Box>
-                        <Typography variant="subtitle1" fontWeight="bold">{patient.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">File: {patient.fileNo} | SOC: {patient.socDate}</Typography>
+                        <Typography variant="subtitle1" fontWeight="bold">{selectedPatients.patientInfo.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">File: {selectedPatients.patientInfo.fileName} | Visit Date: {selectedPatients.patientInfo.visitDate}</Typography>
                         </Box>
                     </Stack>
                     </AccordionSummary>
@@ -209,18 +207,18 @@ const RiskAnalysisApp = () => {
                         <Grid size={{xs: 12, md: 6}} >
                         <Typography variant="overline" color="text.secondary">Admission Summary</Typography>
                         <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafafa' }}>
-                            <Typography variant="body2"><strong>Diagnosis:</strong> {patient.admission.diagnosis}</Typography>
-                            <Typography variant="body2"><strong>Secondary:</strong> {patient.admission.secondary}</Typography>
-                            <Typography variant="body2"><strong>Comorbidities:</strong> {patient.admission.comorbidities}</Typography>
+                            <Typography variant="body2"><strong>Diagnosis:</strong> {selectedPatients.admission.diagnosis}</Typography>
+                            <Typography variant="body2"><strong>Secondary:</strong> {selectedPatients.admission.secondary}</Typography>
+                            <Typography variant="body2"><strong>Comorbidities:</strong> {selectedPatients.admission.comorbidities}</Typography>
                         </Paper>
                         </Grid>
 
                         <Grid size={{xs: 12, md: 6}} >
                         <Typography variant="overline" color="text.secondary">Recertification Summary</Typography>
                         <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafafa' }}>
-                            <Typography variant="body2"><strong>Diagnosis:</strong> {patient.recertification.diagnosis}</Typography>
-                            <Typography variant="body2"><strong>Secondary:</strong> {patient.recertification.secondary}</Typography>
-                            <Typography variant="body2"><strong>Comorbidities:</strong> {patient.recertification.comorbidities}</Typography>
+                            <Typography variant="body2"><strong>Diagnosis:</strong> {selectedPatients.recertification.diagnosis}</Typography>
+                            <Typography variant="body2"><strong>Secondary:</strong> {selectedPatients.recertification.secondary}</Typography>
+                            <Typography variant="body2"><strong>Comorbidities:</strong> {selectedPatients.recertification.comorbidities}</Typography>
                         </Paper>
                         </Grid>
 
@@ -230,7 +228,7 @@ const RiskAnalysisApp = () => {
                             <WarningAmberIcon sx={{ fontSize: 18, mr: 1, color: 'orange' }} /> Clinical Findings
                         </Typography>
                         <List dense sx={{ bgcolor: '#fff9f0', borderRadius: 1 }}>
-                            {patient.findings.map((f: string, i: number) => (
+                            {selectedPatients.findings.map((f: string, i: number) => (
                             <ListItem key={i}><ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={`• ${f}`} /></ListItem>
                             ))}
                         </List>
@@ -241,7 +239,7 @@ const RiskAnalysisApp = () => {
                             <AssignmentTurnedInIcon sx={{ fontSize: 18, mr: 1, color: 'green' }} /> Recommendations
                         </Typography>
                         <List dense sx={{ bgcolor: '#f0f9f0', borderRadius: 1 }}>
-                            {patient.recommendations.map((r: string, i: number) => (
+                            {selectedPatients.recommendations.map((r: string, i: number) => (
                             <ListItem key={i}><ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={`• ${r}`} /></ListItem>
                             ))}
                         </List>
@@ -253,15 +251,15 @@ const RiskAnalysisApp = () => {
                             <Typography variant="subtitle2" color="#d32f2f" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                             <LocalHospitalIcon sx={{ mr: 1, fontSize: 18 }} /> LOS RISK STRATIFICATION
                             </Typography>
-                            <Typography variant="body2"><strong>Projected Stay:</strong> {patient.losRisk.days}</Typography>
-                            <Typography variant="caption" color="text.secondary">{patient.losRisk.findings.join(', ')}</Typography>
+                            <Typography variant="body2"><strong>Risk:</strong> {selectedPatients.losRisk.days}</Typography>
+                            <Typography variant="caption" color="text.secondary">{selectedPatients.losRisk.findings.join(', ')}</Typography>
                         </Paper>
                         </Grid>
 
                     </Grid>
                     </AccordionDetails>
                 </Accordion>
-                ))}
+                )}
             </Box>
         </PageContainer>
     );

@@ -21,10 +21,8 @@ router.post("/denial-risk/:patientId", async (req, res) => {
 
         const files:any = [];
         for (const file of patientFiles) {
-            if(file.category === "RN Initial Assessment"){
-                const filePath = path.join(__dirname, `../uploads/${file.fileName}`); 
-                files.push(filePath);
-            }
+            const filePath = path.join(__dirname, `../uploads/${file.fileName}`); 
+            files.push(filePath);
         }
 
         if(files.length === 0){

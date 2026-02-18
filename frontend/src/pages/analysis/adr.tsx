@@ -132,7 +132,7 @@ const ADRPage = () => {
                         onClick={FetchPatientAnalysisData} 
                         variant="outlined" 
                         size="small"
-                        // disabled={requiredFiles < 7} 
+                        disabled={requiredFiles < 7} 
                         startIcon={<Assistant />}>{(requiredFiles < 7 ? 'Incomplete Required Documents' : 'Generate AI Assistant')}
                     </Button>
                 </Box>
