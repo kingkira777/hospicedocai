@@ -30,7 +30,7 @@ const ADRPage = () => {
                 return
             };
             setLoading(true);
-            const { data } = await api.post(`/adr/analyze-adr-medical-paper/${selectedId}`, {
+            const { data } = await api.post(`/analysis/adr-analyze/${selectedId}`, {
                 userId: session?.user?.id
             });
             console.log("Fetched patient analysis data:", data);
@@ -44,7 +44,7 @@ const ADRPage = () => {
     const FetchSavedAdrData = async () => {
         try {
             if(selectedId === '0') return;
-            const { data } = await api.get(`/adr/data/${selectedId}`);
+            const { data } = await api.post(`/analysis/adr-data/${selectedId}`);
             console.log("Fetched saved ADR data:", data);
             if(data === null || data === 'null') return;
             setAnalysisData(data);
@@ -132,7 +132,7 @@ const ADRPage = () => {
                         onClick={FetchPatientAnalysisData} 
                         variant="outlined" 
                         size="small"
-                        disabled={requiredFiles < 7} 
+                        // disabled={requiredFiles < 7} 
                         startIcon={<Assistant />}>{(requiredFiles < 7 ? 'Incomplete Required Documents' : 'Generate AI Assistant')}
                     </Button>
                 </Box>

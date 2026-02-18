@@ -9,6 +9,8 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import { Analytics, Assignment, PersonSearch, ExpandMore} from "@mui/icons-material";
+import api from "../../utils/axios";
+import { useSession } from "../../SessionContext";
 
 export interface PatientAnalysis {
   id: string;
@@ -95,24 +97,50 @@ const PATIENT_DATA_STORE: any[] = [
 ];
 
 const RiskAnalysisApp = () => {
+    const { session  } = useSession();
     const [selectedPatients, setSelectedPatients] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [patientList, setPatientList] = useState([]);
+
+    
+    const FetchPatientSelectList = async () => {
+        try {
+            const { data } = await api.get(`/patient/list-select?companyId=${session?.user?.companyId}`);
+            console.log("Fetched patient select list:", data);
+            const formData:any = [];
+            for(const patient of data){
+                const xData = {
+                    id: patient.id,
+                    name: patient.firstName + ' ' + patient.lastName,
+                    gender : patient.gender,
+                    dateOfBirth: patient.dateOfBirth,
+                    startOfCare: patient.startOfCare,
+                };
+                formData.push(xData);
+            }
+            setPatientList(formData);
+        } catch (error) {
+            console.error("Error in FetchPatientSelectList:", error);
+        }
+    };
+
+    useEffect(() => {
+        FetchPatientSelectList();
+    }, []);
 
     // 1. Filter options so already selected patients don't show up in the search list
-    const availableOptions = PATIENT_DATA_STORE.filter(
-        (patient) => !selectedPatients.find((s) => s.id === patient.id)
+    const availableOptions = patientList.filter(
+        (patient:any) => !selectedPatients.find((s) => s.id === patient?.id)
     );
     // Simulate a loading delay whenever patients are added
-    const handleSelectionChange = (event: any, newValue: any[]) => {
+    const handleSelectionChange = async (event: any, newValue: any[]) => {
         if (newValue.length > selectedPatients.length) {
         setIsLoading(true);
-        // Simulate API Fetch Delay from OpenAI Assistant
-        setTimeout(() => {
-            setSelectedPatients(newValue);
-            setIsLoading(false);
-        }, 1500);
+        const { data } = await api.post(`/analysis/denial-risk/${newValue[newValue.length - 1].id}`);   
+        console.log("Fetched patient analysis data:", data);
+        setIsLoading(false);
         } else {
-        setSelectedPatients(newValue);
+            setSelectedPatients(newValue);
         }
     };
 
@@ -128,7 +156,7 @@ const RiskAnalysisApp = () => {
                     multiple
                     fullWidth
                     options={availableOptions}
-                    getOptionLabel={(option) => option.name}
+                    getOptionLabel={(option:any) => option.name}
                     onChange={handleSelectionChange}
                     renderInput={(params) => (
                         <TextField {...params} variant="standard" label="Select Patients for Review" placeholder="Start typing name..." />

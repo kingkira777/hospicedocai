@@ -44,7 +44,7 @@ const getNavigation = (session: Session | null): Navigation => {
       },
       {
         segment: 'analysis/risk',
-        title: 'Risk',
+        title: 'Denial Risk',
         icon: <DescriptionIcon />,
         pattern: 'analysis/risk',
       },

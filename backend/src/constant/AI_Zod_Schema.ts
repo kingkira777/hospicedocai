@@ -52,3 +52,28 @@ export const ADRRiskSchema = z.object({
 });
 
 export type ADRRiskData = z.infer<typeof ADRRiskSchema>;
+
+
+export const DenialRiskSchema = z.object({
+  patientInfo: z.object({
+    name: z.string(),
+    visitDate: z.string(),
+    fileName: z.string(),
+  }),
+  admission: z.object({
+    diagnosis: z.string(), // This will now accept "Note not found"
+    secondary: z.string(),
+    comorbidities: z.string(),
+  }),
+  recertification: z.object({
+    diagnosis: z.string(),
+    secondary: z.string(),
+    comorbidities: z.string(),
+  }),
+  findings: z.array(z.string()),
+  recommendations: z.array(z.string()),
+  losRisk: z.object({
+    days: z.string(),
+    findings: z.array(z.string()),
+  }),
+});

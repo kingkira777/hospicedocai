@@ -5,8 +5,8 @@ import App from './App';
 import Layout from './layouts/dashboard';
 import DashboardPage from './pages';
 import PatientsPage from './pages/patients/index';
+import HomeClientPage from './pages/home';
 
-import CasesPage from './pages/cases';
 import DocumentsPage from './pages/documents';
 import ADRPage from './pages/analysis/adr';
 import MedicalNotesAnalysisApp from './pages/analysis/notes';
@@ -122,6 +122,10 @@ const router = createBrowserRouter([
       {
         path: '/sign-up',
         Component: SignUp,
+      },
+      {
+        path: '/home',
+        Component: HomeClientPage,
       },
     ],
   },
