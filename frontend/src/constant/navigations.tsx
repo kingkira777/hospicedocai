@@ -54,6 +54,16 @@ const getNavigation = (session: Session | null): Navigation => {
         icon: <DescriptionIcon />,
         pattern: 'analysis/notes',
       },
+      {
+        kind: 'header',
+        title: 'Human Resource',
+      },
+      {
+        segment: 'hr/employees',
+        title: 'Employees',
+        icon: <PeopleIcon />,
+        pattern: '/employees',
+      },
       
     ];
 

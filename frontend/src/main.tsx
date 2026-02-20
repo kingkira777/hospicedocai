@@ -15,6 +15,10 @@ import MedicalNotesAnalysisApp from './pages/analysis/notes';
 import RiskAnalysisApp from './pages/analysis/risk';
 
 
+//HR
+import EmployeesPage from './pages/hr/employees';
+
+
 
 import UserPage from './pages/users';
 
@@ -99,6 +103,20 @@ const router = createBrowserRouter([
               </ProtectedRoute>
             ),
           }
+        ],
+      },
+      {
+        path: 'hr',
+        Component: Layout,
+        children: [
+          {
+            path: 'employees',
+            Component: () => (
+              <ProtectedRoute allowedRoles={['admin', 'user']}>
+                <EmployeesPage />
+              </ProtectedRoute>
+            ),
+          },
         ],
       },
       {

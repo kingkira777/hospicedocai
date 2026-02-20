@@ -8,9 +8,10 @@ import {
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
-import { Analytics, Assignment, PersonSearch, ExpandMore} from "@mui/icons-material";
+import { PersonSearch, ExpandMore} from "@mui/icons-material";
 import api from "../../utils/axios";
 import { useSession } from "../../SessionContext";
+import { ShowAlert } from "../../utils/sweetAlert";
 
 export interface PatientAnalysis {
   id: string;
@@ -45,56 +46,6 @@ export interface DiagnosisResult {
 }
 
 
-// Sample data representing your AI results database
-const PATIENT_DATABASE: PatientAnalysis[] = [
-  { id: '1', name: "John Doe", socDate: "2023-10-12", fileNo: "ADR-9921", /* ... data */ },
-  { id: '2', name: "Jane Smith", socDate: "2024-01-05", fileNo: "ADR-4432", /* ... data */ },
-];
-
-// Example Data (This would come from your AI Assistant Result)
-const mockResult: DiagnosisResult = {
-  patientInfo: { name: "John Doe", socDate: "2023-10-12", fileNo: "ADR-9921" },
-  admission: { 
-    diagnosis: "Congestive Heart Failure", 
-    secondary: "Hypertension", 
-    comorbidities: "Type 2 Diabetes" 
-  },
-  recertification: { 
-    diagnosis: "End-stage Renal Disease", 
-    secondary: "CHF", 
-    comorbidities: "Peripheral Neuropathy" 
-  },
-  findings: ["Significant decline in cardiac output", "Weight increase of 5lbs in 48 hours"],
-  recommendations: ["Adjust diuretics", "Update POC for frequent monitoring"],
-  losRisk: { days: "180 Days", findings: ["History of frequent hospitalizations"] }
-};
-
-// Assuming this data is returned from your AI Assistant logic
-const PATIENT_DATA_STORE: any[] = [
-  {
-    id: '1',
-    name: "John Doe",
-    socDate: "2023-10-12",
-    fileNo: "ADR-9921",
-    admission: { diagnosis: "CHF", secondary: "HTN", comorbidities: "Diabetes" },
-    recertification: { diagnosis: "End-stage Renal", secondary: "CHF", comorbidities: "Neuropathy" },
-    findings: ["Decline in cardiac output", "Weight increase observed"],
-    recommendations: ["Adjust diuretics", "Increase monitoring"],
-    losRisk: { days: "180 Days", findings: ["Frequent hospitalizations"] }
-  },
-  {
-    id: '2',
-    name: "John Smith",
-    socDate: "2024-10-12",
-    fileNo: "ADR-9922",
-    admission: { diagnosis: "CHF", secondary: "HTN", comorbidities: "Diabetes" },
-    recertification: { diagnosis: "End-stage Renal", secondary: "CHF", comorbidities: "Neuropathy" },
-    findings: ["Decline in cardiac output", "Weight increase observed"],
-    recommendations: ["Adjust diuretics", "Increase monitoring"],
-    losRisk: { days: "180 Days", findings: ["Frequent hospitalizations"] }
-  },
-  // Add more mock data as needed...
-];
 
 const RiskAnalysisApp = () => {
     const { session  } = useSession();
@@ -133,7 +84,19 @@ const RiskAnalysisApp = () => {
             if(newValue.id === undefined) return;
             setIsLoading(true);
             const { data } = await api.post(`/analysis/denial-risk/${newValue.id}`);   
+    
             console.log("Fetched patient analysis data:", data);
+            if(data.type === 'error'){
+                setSelectedPatients(null);
+                ShowAlert({
+                    title : 'Analysis Error',
+                    text : data.message || 'An error occurred during analysis. Please try again later.',
+                    icon : 'error',
+                    isToast : true
+                });
+                setIsLoading(false);
+                return;
+            }
             setSelectedPatients(data);
             setIsLoading(false);
         } catch (error) {

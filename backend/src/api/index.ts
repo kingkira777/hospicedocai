@@ -8,6 +8,7 @@ import casesRoutes from './cases';
 import userRoute from './user';
 import noteRoute from './note';
 import analysisRoute from './analysis';
+import employeeRoute from './employee';
 
 
 const router = express.Router();
@@ -30,5 +31,6 @@ router.use("/cases", casesRoutes);
 router.use("/user", userRoute);
 router.use("/note", noteRoute);
 router.use("/analysis", analysisRoute);
+router.use("/employee", employeeRoute);
 
 export default router;

@@ -1,4 +1,6 @@
 import User from "../models/user.model";
+import Employee from "../models/employee.model";
+import EmployeeAccount from "../models/employeeAccount.model";
 import Company from "../models/company.model";
 import bcrypt from "bcrypt";
 
@@ -15,6 +17,34 @@ class AuthController {
 
     Login = async (email: string, password: string) => {
         try {
+
+            const employee = await EmployeeAccount.findOne({
+                where: { email },
+                attributes: ['id','email','password','accessLevel'], 
+                include: [
+                    {
+                        model: Employee,
+                        as: 'employee',
+                        attributes: ['id', 'firstName', 'lastName'],
+                        include : [
+                            {
+                                model : Company,
+                                as : 'company',
+                                attributes : ['id', 'name']
+                            }
+                        ]
+                    },
+                ]
+            });
+
+            if (employee) {
+                const passwordMatch = await bcrypt.compare(password, employee.password || '');
+                if (!passwordMatch) {
+                    return 'invalid password';
+                }
+                return employee;
+            }
+
             const user = await User.findOne({ 
                 where: { email },
                 attributes: ['id','email','password','role'], 
@@ -29,6 +59,7 @@ class AuthController {
             if (!user) {
                 return 'user not found';
             }
+            
 
             const passwordMatch = await bcrypt.compare(password, user.password || '');
             if (!passwordMatch) {

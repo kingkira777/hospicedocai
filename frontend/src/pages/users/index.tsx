@@ -44,7 +44,7 @@ const UserPage = () => {
       if(session?.user){
         FetchUsers(parseInt(session.user.companyId, 10));
       }
-    },[session]);
+    },[session,pagination.page,pagination.pageSize]);
 
 
 

@@ -190,13 +190,13 @@ const ADRPage = () => {
                                         </Typography>
                                     </Stack>
                                     <Chip icon={<Warning />} 
-                                        label={(analysisData.overall_score > 50) ? "High Risk" : "Low Risk"} 
-                                        color={(analysisData.overall_score > 50) ? "error" : "success"} 
+                                        label={analysisData.status} 
+                                        color={(analysisData.status ==="High") ? "error" : (analysisData.status === "Moderate") ? "warning" : "success"} 
                                         size="small" 
                                         sx={{ mb: 2 }} />
                                     <LinearProgress variant="determinate" 
                                         value={analysisData.overall_score | 0} 
-                                        color={(analysisData.overall_score > 50) ? "error" : "success"  } 
+                                        color={(analysisData.status ==="High") ? "error" : (analysisData.status === "Moderate") ? "warning" : "success"} 
                                         sx={{ height: 8, borderRadius: 5, mb: 2 }} />
                                     
                                     <Grid container spacing={1}>

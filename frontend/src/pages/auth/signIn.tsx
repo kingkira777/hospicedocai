@@ -89,6 +89,23 @@ export default function SignIn() {
         password: formData.get('password'),
       });
 
+      console.log("Login successful:", data);
+
+      if(data?.employee){
+        const employee:any = {
+          id : data.employee.id,
+          companyId : data.employee.company.id,
+          company : data.employee.company.name,
+          name : data.employee.firstName + ' ' + data.employee.lastName,
+          email: data.email || '',
+          image: data.image || 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png',
+          role : data.accessLevel
+        }
+        return {
+          user : employee
+        };
+      }
+
       const user:any = {
         id : data.id,
         companyId : data.company.id,
