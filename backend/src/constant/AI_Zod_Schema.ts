@@ -1,4 +1,4 @@
-import z from "zod";
+import z, { mac } from "zod";
 
 export const ADRRiskSchema = z.object({
     patient_details: z.object({
@@ -9,6 +9,20 @@ export const ADRRiskSchema = z.object({
     }),
     overall_score: z.number().min(0).max(100),
     status: z.enum(['Critical', 'High', 'Moderate', 'Low']),
+    pps_trend: z.array(z.object({ date: z.string(), pps_score: z.string() })).default([]),
+    discipline_notes: z.array(z.object({ discipline: z.enum(['Volunteer', 'Chaplain', 'MSW']), date: z.string(), note: z.string() })).default([]),
+    adr_evidence_table: z.array(z.object({
+        date: z.string(),
+        measurements : z.object({
+            pps: z.string().nullable().optional(),
+            weight: z.string().nullable().optional(),
+            mac: z.string().nullable().optional(),
+            bp_hr: z.string().nullable().optional(),
+            spo2: z.string().nullable().optional(),
+            pain: z.string().nullable().optional()
+        }),
+        evidence_narrative: z.array(z.string()).default([])
+    })).default([]),
     categories: z.object({
         medical_necessity: z.object({
         score: z.number(),
@@ -43,6 +57,7 @@ export const ADRRiskSchema = z.object({
     benefit_period_evidence: z.array(z.object({
         date: z.string(),
         weight: z.string().nullable().optional(),
+        mac: z.string().nullable().optional(),
         bp_hr: z.string().nullable().optional(),
         spo2: z.string().nullable().optional(),
         pain: z.union([z.string(), z.number()]).nullable().optional()

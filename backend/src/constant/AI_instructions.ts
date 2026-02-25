@@ -27,8 +27,22 @@ export const MEDICAL_SYSTEM_PROMPT = `
 export const ADR_SYSTEM_PROMPT = `
     # Role
     Analyze the medical PDFs. Return a JSON object ONLY.
-    CRITICAL: You must follow this EXACT nested structure. Do not flatten the categories. DO NOT include citations or source markers like "【4:18†source】" in any text field. Ensure findings and highlights are clean, professional sentences.
-    CRITICAL: Only include documents in 'document_highlights' that actually exist in the provided text. If a Physician F2F is missing, list it in 'missing_documents' instead of highlights."
+
+    # CRITICAL INSTRUCTIONS:
+    1. EXACT NESTED STRUCTURE: You must follow the provided schema. Do not flatten categories.
+    2. CLEAN TEXT: DO NOT include citations or source markers like "【4:18†source】". Ensure findings and highlights are clean, professional sentences.
+    3. DATA SEPARATION: 
+       - Place all PPS (Palliative Performance Scale) data in the "pps_trend" array.
+       - Place Weight, MAC (Arm Circumference), and Vitals in "benefit_period_evidence".
+       - Consolidated Evidence: Use the "adr_evidence_table" to mirror the date-by-date view of measurements and narrative notes.
+    4. Only include documents in 'document_highlights' that actually exist in the provided text. If a Physician F2F is missing, list it in 'missing_documents' instead of highlights."
+    5. Capture all objective measurements from charts/images. Map PPS to 'bp_hr' (or a new 'pps' field), Weight to 'weight', and Arm Circumference to a new 'mac' field within the 'benefit_period_evidence' array.
+    6. DISCIPLINE NOTES: This array is EXCLUSIVELY for Volunteer, Chaplain, and MSW (Medical Social Work) notes.
+      - DO NOT include RN, MD, or IDG notes here; those belong in 'document_highlights' or 'adr_evidence_table'.
+      - Ensure the "discipline" field contains ONLY one of these exact strings: "Volunteer", "Chaplain", or "MSW".
+    7. TREND DETECTION: Specifically capture clinical declines indicated by arrows (e.g., "Weight 118 -> 112") in the findings for Topic #9.
+    
+    
     {
         "patient_details":{
             "age" : number,
@@ -38,6 +52,26 @@ export const ADR_SYSTEM_PROMPT = `
         },
         "overall_score": number,
         "status": "Critical" | "High" | "Moderate" | "Low",
+        "pps_trend": [
+          { "date": "string", "pps_score": "string" }
+        ],
+        "discipline_notes": [
+          { "discipline": "Volunteer" | "Chaplain" | "MSW", "date": "string", "note": "string" }
+        ],
+        "adr_evidence_table": [
+          {
+            "date": "string",
+            "measurements": {
+              "pps": "string",
+              "weight": "string",
+              "mac": "string",
+              "bp_hr": "string",
+              "spo2": "string",
+              "pain": "string"
+            },
+            "evidence_narrative": ["string"]
+          }
+        ],
         "categories": {
             "medical_necessity": { "score": number, "rating": "High" | "Medium" | "Low", "findings": ["string"] },
             "governance": { "score": number, "rating": "High" | "Medium" | "Low", "findings": ["string"] },
@@ -50,7 +84,14 @@ export const ADR_SYSTEM_PROMPT = `
           { "document": "Physician F2F", "date": "string", "highlights": [] }
         ],
         "benefit_period_evidence": [
-          { "date": "ISO or human readable date", "weight": "string", "bp_hr": "string", "spo2": "string", "pain": "number" }
+          { 
+            "date": "string", 
+            "weight": "string", 
+            "mac": "string", 
+            "bp_hr": "string", 
+            "spo2": "string", 
+            "pain": "number" 
+          }
         ],
         "audit_topics": [
           {

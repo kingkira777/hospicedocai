@@ -132,7 +132,7 @@ const ADRPage = () => {
                         onClick={FetchPatientAnalysisData} 
                         variant="outlined" 
                         size="small"
-                        disabled={requiredFiles < 7} 
+                        // disabled={requiredFiles < 7} 
                         startIcon={<Assistant />}>{(requiredFiles < 7 ? 'Incomplete Required Documents' : 'Generate AI Assistant')}
                     </Button>
                 </Box>
@@ -241,7 +241,7 @@ const ADRPage = () => {
                         
                         {/* Category Table */}
                         <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                            <Box sx={{ p: 2, borderBottom: '1px solid #eee' }}>
+                            <Box sx={{ p: 2, bgcolor:'action.hover', borderBottom: '1px solid #eee' }}>
                                 <Typography variant="subtitle1" fontWeight="bold">Categories</Typography>
                             </Box>
                             <TableContainer>
@@ -290,13 +290,77 @@ const ADRPage = () => {
                             </TableContainer>
                         </Card>
 
+                        {/* Category Table */}
+                        <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                            <Box sx={{ p: 2, bgcolor:'action.hover', borderBottom: '1px solid #eee' }}>
+                                <Typography variant="subtitle1" fontWeight="bold">ADR Evidence Table (Auto-built: Dates + Measurements + Notes)</Typography>
+                            </Box>
+                            <TableContainer>
+                                <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                    <TableCell><strong>Date</strong></TableCell>
+                                    <TableCell><strong>Measurements</strong></TableCell>
+                                    <TableCell><strong>Evidence / Notes</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {
+                                        analysisData.adr_evidence_table?.map((row:any, index:any) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{row.date}</TableCell>
+                                                <TableCell>
+                                                    <Typography variant="caption" component="div">
+                                                        {row.measurements.pps && <div>PPS: {row.measurements.pps}</div>}
+                                                        {row.measurements.weight && <div>Weight: {row.measurements.weight}</div>}
+                                                        {row.measurements.mac && <div>MAC: {row.measurements.mac}</div>}
+                                                        {row.measurements.bp_hr && <div>BP/HR: {row.measurements.bp_hr}</div>}
+                                                        {row.measurements.spo2 && <div>SPO2: {row.measurements.spo2}</div>}
+                                                        {row.measurements.pain !== undefined && <div>Pain: {row.measurements.pain}</div>}
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant="caption" component="div">
+                                                        {row.evidence_narrative}
+                                                    </Typography>
+                                                </TableCell>
+                                            </TableRow> 
+                                        ))
+                                    }
+                                </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Card>
 
 
                         {/* Evidence Table */}
                         <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                            <Box sx={{ p: 2, borderBottom: '1px solid #eee' }}>
+                            <Box sx={{ p: 2, bgcolor:'action.hover', borderBottom: '1px solid #eee' }}>
                                 <Typography variant="subtitle1" fontWeight="bold">Benefit Period Evidence</Typography>
                             </Box>
+                            <Box sx={{ p: 2, bgcolor: 'Background.default' }}><strong>PPS Trend (dated)</strong></Box>
+                            <TableContainer>
+                                <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                    <TableCell><strong>Date</strong></TableCell>
+                                    <TableCell><strong>PPS Score</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {
+                                        analysisData.pps_trend?.map((row:any, index:any) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{row.date}</TableCell>
+                                                <TableCell>{row.pps_score}</TableCell>
+                                            </TableRow> 
+                                        ))
+                                    }
+                                </TableBody>
+                                </Table>
+                            </TableContainer>
+
+                            <Box sx={{ p: 2, bgcolor: 'Background.default' }}><strong>Vitals & Pain (dated)</strong></Box>
                             <TableContainer>
                                 <Table size="small">
                                 <TableHead>
@@ -356,7 +420,31 @@ const ADRPage = () => {
                         </TableContainer>
                         </Card>
 
-            
+                        <Card variant="outlined" sx={{ borderRadius: 3 }}>
+                            <Box sx={{ p: 2, bgcolor: 'action.hover', borderBottom: '1px solid #eee' }}>
+                                <Typography variant="subtitle1" fontWeight="bold">Discipline notes (dated):</Typography>
+                            </Box>
+                            <TableContainer>
+                                <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                    <TableCell><strong>Date</strong></TableCell>
+                                    <TableCell><strong>discipline</strong></TableCell>
+                                    <TableCell><strong>Note</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {analysisData.discipline_notes?.map((row:any, index:any) => (
+                                        <TableRow key={index}>
+                                            <TableCell>{row.date}</TableCell>
+                                            <TableCell>{row.discipline}</TableCell>
+                                            <TableCell>{row.note}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Card>
 
 
                          {/* 3. ADR Audit Topics (New Section) */}

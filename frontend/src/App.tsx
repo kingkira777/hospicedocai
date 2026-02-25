@@ -34,7 +34,7 @@ export default function App() {
 
   const signOut = React.useCallback(() => {
     setSession(null);
-    navigate('/home');
+    window.location.href = 'https://hospicedociq.imanagedhealthcare.com/';
   }, [navigate, setSession]);
 
 

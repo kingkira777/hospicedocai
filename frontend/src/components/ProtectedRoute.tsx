@@ -11,7 +11,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   const { session } = useSession();
   
   if (!session) {
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/sign-in" replace />;
   }
   
   if (allowedRoles && !allowedRoles.includes(session.user?.role || '')) {
