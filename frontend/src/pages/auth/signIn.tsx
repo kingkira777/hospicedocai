@@ -7,6 +7,7 @@ import {
   Link, 
   TextField } from '@mui/material';
 import api from '../../utils/axios';
+const UserIcon = '../../assets/user-icon.png';
 
 
 
@@ -98,7 +99,7 @@ export default function SignIn() {
           company : data.employee.company.name,
           name : data.employee.firstName + ' ' + data.employee.lastName,
           email: data.email || '',
-          image: data.image || 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png',
+          image: data.image || UserIcon,
           role : data.accessLevel
         }
         return {
@@ -112,7 +113,7 @@ export default function SignIn() {
         company : data.company.name,
         name : data.email,
         email: data.email,
-        image: data.image || 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png',
+        image: data.image || UserIcon,
         role: data.role
       };
       return {

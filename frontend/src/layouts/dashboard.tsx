@@ -22,6 +22,8 @@ export default function Layout() {
   
   return (
     <DashboardLayout 
+      title="HospiceIQ"
+      subtitle="HospiceIQ"
       slots={{
         sidebarFooter : SidebarFooter
       }} 

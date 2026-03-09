@@ -3,6 +3,7 @@ import { ReactRouterAppProvider } from '@toolpad/core/react-router';
 import { getNavigation } from './constant/navigations';
 import React from 'react';
 import { SessionContext, Session } from './SessionContext';
+import theme from '../theme';
 
 import './styles/global.css';
 
@@ -43,6 +44,7 @@ export default function App() {
   return (
     <SessionContext.Provider value={sessionContextValue}>
       <ReactRouterAppProvider
+        theme={theme}
         navigation={getNavigation(session)} 
         branding={BRANDING} 
         session={session} 
