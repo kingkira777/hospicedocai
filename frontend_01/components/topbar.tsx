@@ -14,14 +14,15 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ColorThemePicker } from "@/components/color-theme"
 import { useRouter } from "next/router"
+import { useAuth } from "@/hooks/use-auth"
 
 interface TopbarProps {
   onMenuClick?: () => void
 }
 
 export function Topbar({ onMenuClick }: TopbarProps) {
+  const { user, loading }:any = useAuth()
   const [q, setQ] = useState("");
-
 
   const handleSignOut = () => {
     localStorage.removeItem("user")
@@ -106,22 +107,24 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <DropdownMenu>
             <DropdownMenuTrigger className="rounded-full p-1.5 hover:bg-muted focus:outline-none focus:ring-2">
               <Avatar className="size-8">
-                <AvatarFallback>AD</AvatarFallback>
+                <AvatarFallback>
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                </AvatarFallback>
               </Avatar>
               <span className="sr-only">Open user menu</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel className="flex items-center gap-2">
                 <User className="size-4" />
-                Signed in as Admin
+                Signed in as {user?.email}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <a href="/profile">Profile</a>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              {/* <DropdownMenuItem asChild>
                 <a href="/profile">Users</a>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive" >
                 <button onClick={handleSignOut}>Sign out</button>

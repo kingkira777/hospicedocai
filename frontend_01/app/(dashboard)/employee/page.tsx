@@ -40,7 +40,7 @@ export default function EmployeePage() {
 
   useEffect(() => {
     if(!user) return;
-    fetchEmployees(user?.company?.id);
+    fetchEmployees(user?.companyId || 0);
   }, [user]);
 
   const columns: TableProps<any>['columns'] = [
@@ -89,12 +89,17 @@ export default function EmployeePage() {
           >
             Account
           </button>
-            <button className="cursor-pointer bg-red-500 text-white py-2 px-4 rounded" onClick={() => {
-              handleRemoveEmployee(record);
-            }}
-          >
-            Remove
-          </button>
+
+          {
+            (user?.type === 'admin' || user?.type === 'user') && (
+              <button className="cursor-pointer bg-red-500 text-white py-2 px-4 rounded" onClick={() => {
+                  handleRemoveEmployee(record);
+                }}
+              >
+                Remove
+              </button>
+            )
+          }
           </div>
         ),
       }
@@ -112,7 +117,7 @@ export default function EmployeePage() {
         showConfirmationDialog('Are you sure?', 'Do you really want to delete this employee?').then( async(confirmed) => {
         if (confirmed) {
           await api.post(`/employee/remove/${record.id}`);
-          fetchEmployees(parseInt(user?.company?.id || '0', 10));  
+          fetchEmployees(parseInt(user?.companyId || '0', 10));  
           messageApi.success("Employee deleted successfully!");
           return;
         } else {
@@ -141,7 +146,7 @@ export default function EmployeePage() {
         payload={editEmployee || undefined}
         onClose={() => {
           setIsModalOpen(false)
-          fetchEmployees(user?.company?.id);
+          fetchEmployees(user?.companyId || 0);
         }}
       />
 
@@ -150,7 +155,7 @@ export default function EmployeePage() {
         payload={editEmployee || undefined}
         onClose={() => {
           setIsAccountModalOpen(false)
-          fetchEmployees(user?.company?.id);
+          fetchEmployees(user?.companyId || 0);
         }}
       />
     </section>

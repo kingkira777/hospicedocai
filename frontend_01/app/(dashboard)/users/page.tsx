@@ -20,7 +20,7 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const { data } = await api.get(`/user/list?companyId=${user?.company?.id}&userId=${user?.id}`);
+      const { data } = await api.get(`/user/list?companyId=${user?.companyId}&userId=${user?.id}`);
       console.log("Fetched users:", data);
       setUserData(data.rows);
     } catch (error) {
@@ -65,11 +65,15 @@ export default function UsersPage() {
           >
             Edit
           </button>
-            <button className="cursor-pointer bg-red-500 text-white py-2 px-4 rounded" onClick={() => {
-            }}
-          >
-            Remove
-          </button>
+          {
+            (user?.type === 'admin' || user?.type === 'user') && (
+              <button className="cursor-pointer bg-red-500 text-white py-2 px-4 rounded" onClick={() => {
+                }}
+              >
+                Remove
+              </button>
+            )
+          }
           </div>
         ),
       }

@@ -7,7 +7,7 @@ import {
   AlertTriangle, 
   Activity, 
   Calendar,
-  ChevronRight,
+  Loader2,
   ClipboardList,
   CheckCircle2
 } from 'lucide-react';
@@ -61,6 +61,7 @@ export default function DenialRiskAnalysis() {
     } catch (error) {
       console.log(error);
       messageApi.error((error as Error).message);
+      setLoading(false);
     }
   };
 
@@ -95,10 +96,31 @@ export default function DenialRiskAnalysis() {
           </div>
         </div>
         <button 
+          disabled={loading}
+          onClick={handleGenerateAnalysis}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all uppercase tracking-tight border
+              ${loading 
+                ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" 
+                :"bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700"
+              }`}
+          >
+            {loading ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                AI is analyzing...
+              </>
+            ) : (
+<>
+                <CheckCircle2 size={18} />
+                  Analyze Documents
+                </>
+            )}
+        </button>
+        {/* <button 
           onClick={handleGenerateAnalysis}
           className="p-2 hover:bg-blue-400 rounded-xl bg-blue-500 text-white flex items-center gap-2 cursor-pointer">
           Generate AI Analysis
-        </button>
+        </button> */}
       </div>
 
       {/* --- Main Grid: Admission vs Recertification --- */}

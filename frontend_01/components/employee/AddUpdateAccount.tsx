@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { Modal, Input, Select, Button, Typography, Form, message } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import api from '@/lib/axios';
-import { useAuth } from '@/hooks/use-auth';
 
 const { Text } = Typography;
 
@@ -21,7 +20,6 @@ interface Props {
 }
 
 const AddUpdateEmployeeAccount = ({ payload, open, onClose }: Props) => {
-    const { user }:any = useAuth();
     const [messageApi, contextHolder] = message.useMessage();
 
     const { control, handleSubmit, reset, watch } = useForm<UserInterface>({

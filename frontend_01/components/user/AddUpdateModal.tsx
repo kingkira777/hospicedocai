@@ -28,7 +28,7 @@ const AddUpdateUserModal = ({ payload, open, onClose }: Props) => {
     const { control, handleSubmit, reset, watch } = useForm<UserInterface>({
         defaultValues: {
             id: null,
-            companyId: user?.company?.id || '0',
+            companyId: user?.companyId || '0',
             email: '',
             password: '',
             retypePassword: '',
@@ -52,7 +52,7 @@ const AddUpdateUserModal = ({ payload, open, onClose }: Props) => {
         if(payload === undefined){
             reset({
                 id: null,
-                companyId: user?.company?.id || '0',
+                companyId: user?.companyId || '0',
                 email: '',
                 role: 'user',
                 password: '',

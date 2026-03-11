@@ -3,8 +3,10 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
 import { useState } from "react"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function ProfilePage() {
+  const { user }:any = useAuth();
   const [notifications, setNotifications] = useState(true)
   const [energySaving, setEnergySaving] = useState(false)
 
@@ -17,16 +19,32 @@ export default function ProfilePage() {
         <div className="rounded-xl bg-background p-4 ring-1 ring-border">
           <div className="flex items-center gap-3">
             <Avatar className="size-12">
-              <AvatarFallback className="text-lg">JR</AvatarFallback>
+              <AvatarFallback className="text-lg">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium text-foreground">Jennifer Rhodes</p>
-              <p className="text-sm text-muted-foreground">jennifer@example.com</p>
+              <p className="font-medium text-foreground">{user?.name}</p>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </div>
         </div>
 
         <div className="rounded-xl bg-background p-4 ring-1 ring-border">
+          <div className="flex items-center gap-3">
+            <Avatar className="size-12">
+              <AvatarFallback className="text-lg">
+                {user?.company?.charAt(0).toUpperCase() || "C"}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium text-foreground">{user?.company}</p>
+              <p className="text-sm text-muted-foreground">COMPANY</p>
+            </div>
+          </div>
+        </div>
+
+        {/* <div className="rounded-xl bg-background p-4 ring-1 ring-border">
           <h3 className="mb-3 font-medium text-foreground">Preferences</h3>
           <div className="flex items-center justify-between py-2">
             <span className="text-sm text-foreground">Notifications</span>
@@ -46,7 +64,7 @@ export default function ProfilePage() {
             <li className="rounded-lg bg-primary/10 p-3 text-primary">Away</li>
             <li className="rounded-lg bg-primary/10 p-3 text-primary">Movie Time</li>
           </ul>
-        </div>
+        </div> */}
       </div>
     </section>
   )

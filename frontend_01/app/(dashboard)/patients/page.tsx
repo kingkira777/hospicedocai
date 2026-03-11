@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import TablePatients from "@/components/patient/table";
 import { message, type TableProps } from "antd";
 import { Edit2, Trash2 } from "lucide-react";
 
@@ -12,7 +11,7 @@ import api from "@/lib/axios";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function PatientPage() {
-  const { user } = useAuth();
+  const { user }:any = useAuth();
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null); 
@@ -23,8 +22,7 @@ export default function PatientPage() {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get('/patient/list?companyId=1');
-      console.log("Fetched patients:", data);
+      const { data } = await api.get(`/patient/list?companyId=${user?.companyId}`);
       setPatients(data.rows);
       setLoading(false);
     } catch (error) {
@@ -34,6 +32,7 @@ export default function PatientPage() {
   };
 
   useEffect(() => {
+    if(!user) return;
     fetchPatients();
   }, [user]);
 
@@ -86,13 +85,17 @@ export default function PatientPage() {
             <Edit2 className="w-4 h-4" />
             <span>Edit</span>
           </button>
-          <button key={'remove'+record.id} className="cursor-pointer bg-red-500 text-white py-2 px-4 rounded flex items-center gap-1" onClick={() => {
-              handleRemovePatient(record);
-            }}
-          >
-            <Trash2 className="w-4 h-4" />
-            <span>Remove</span>
-          </button>
+          {
+            (user?.type === "admin" || user?.type === "user") && (
+              <button key={'remove'+record.id} className="cursor-pointer bg-red-500 text-white py-2 px-4 rounded flex items-center gap-1" onClick={() => {
+                  handleRemovePatient(record);
+                }}
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Remove</span>
+              </button>
+            )
+          }
         </div>
       ),
     }

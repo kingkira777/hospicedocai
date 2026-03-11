@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   AlertCircle, CheckCircle2, FileText, User, 
-  Search, ShieldAlert, ClipboardCheck, Info 
+  Search, ShieldAlert, ClipboardCheck, Info,
+  Loader2
 } from 'lucide-react';
 
 import { useAuth } from '@/hooks/use-auth';
@@ -45,19 +46,26 @@ export default function MedicalAuditDashboard() {
 
   const fetchPatientAnalysisData = async () => {
     try {
-        if(!selectedPatient) {
-          messageApi.warning("Please select a patient");  
-          return
-        };
-        setLoading(true);
-        const { data } = await api.post(`/analysis/adr-analyze/${selectedPatient.id}`, {
-            userId: user?.id
-        });
-        console.log("Fetched patient analysis data:", data);
-        setAnalysisData(data);
-        setLoading(false);
+      if(!selectedPatient) {
+        messageApi.warning("Please select a patient");  
+        return
+      };
+
+      // if(requiredFiles !== REQUIRED_DOCUMENTS.length) {
+      //   messageApi.warning("Please upload all required documents");  
+      //   return
+      // };
+
+      setLoading(true);
+      const { data } = await api.post(`/analysis/adr-analyze/${selectedPatient.id}`, {
+          userId: user?.id
+      });
+      console.log("Fetched patient analysis data:", data);
+      setAnalysisData(data);
+      setLoading(false);
     } catch (error) {
-        console.error("Error in FetchPatientAnalysisData:", error);
+      setLoading(false);
+      console.error("Error in FetchPatientAnalysisData:", error);
     }
   };
   
@@ -65,7 +73,6 @@ export default function MedicalAuditDashboard() {
     try {
         if(!selectedPatient) return;
         const { data } = await api.post(`/analysis/adr-data/${selectedPatient.id}`);
-        console.log("Fetched saved ADR data:", data);
         if(data === null || data === 'null') return;
         setAnalysisData(data);
     } catch (error) {
@@ -101,12 +108,34 @@ export default function MedicalAuditDashboard() {
         </div>
 
         <button 
-          // disabled={requiredFiles !== REQUIRED_DOCUMENTS.length
           disabled={loading}
           onClick={fetchPatientAnalysisData}
-          className="flex items-center gap-2 bg-amber-50 text-amber-700 border border-amber-200 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-amber-100 transition-all uppercase tracking-tight">
-          <AlertCircle size={18} />
-          Incomplete Required Documents
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all uppercase tracking-tight border
+              ${loading 
+                ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" 
+                : requiredFiles === REQUIRED_DOCUMENTS.length
+                  ? "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700"
+                  : "bg-rose-600 text-white border-rose-600 hover:bg-rose-700"
+              }`}
+          >
+            {loading ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                AI is analyzing...
+              </>
+            ) : (
+
+              (requiredFiles === REQUIRED_DOCUMENTS.length) ? (
+                <>
+                  <CheckCircle2 size={18} />
+                  Analyze Documents
+                </>
+              ) :
+              <>
+                <AlertCircle size={18} />
+                Incomplete Required Documents
+              </>
+            )}
         </button>
       </div>
 

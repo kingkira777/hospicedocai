@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Input, message, DatePicker, Select } from "antd";
 import dayjs from "dayjs";
 import api from "@/lib/axios";
+import { useAuth } from "@/hooks/use-auth";
 
 interface AddUpdateModalProps {
   open: boolean;
@@ -27,7 +28,7 @@ interface PatientFormData {
  * to illustrate passing data back to the caller.
  */
 export default function AddUpdatePatientModal({ open, close, payload }: AddUpdateModalProps) {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { user }:any = useAuth();
   const [messageApi, contextHolder] = message.useMessage();
   const [visible, setVisible] = useState(open);
     
@@ -58,7 +59,7 @@ export default function AddUpdatePatientModal({ open, close, payload }: AddUpdat
     }else{
         // reset form when opening for new patient
         setFormData({
-            companyId: user.company?.id,
+            companyId: user?.companyId,
             firstName: "",
             lastName: "",
             gender: "male",
@@ -77,7 +78,7 @@ export default function AddUpdatePatientModal({ open, close, payload }: AddUpdat
   const handleOk = async () => {
     console.log("Form data to submit:", formData);
 
-    formData.companyId = user.company?.id;
+    formData.companyId = user?.companyId;
     formData.userId = user?.id;
 
 

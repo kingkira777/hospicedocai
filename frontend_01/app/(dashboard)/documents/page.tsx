@@ -7,7 +7,9 @@ import {
   FileText, 
   Image as ImageIcon, 
   X, 
-  CheckCircle2 
+  CheckCircle2,
+  UploadCloudIcon,
+  Loader2
 } from 'lucide-react';
 
 import { message } from 'antd';
@@ -24,6 +26,7 @@ export default function DocumentsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [uploadCategory, setUploadCategory] = useState<string>("Others");
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const FetchFileByPatient = async (patientId: number) => {
     try {
@@ -59,23 +62,29 @@ export default function DocumentsPage() {
         messageApi.error("Please select a patient");
         return;
       }
+      setIsUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append('patientId',  selectedPatient?.id || '');
+        formData.append('userId', user.id || '');
 
-      const formData = new FormData();
-      formData.append('patientId',  selectedPatient?.id || '');
-      formData.append('userId', user.id || '');
+        for (let i = 0; i < e.target.files.length; i++) {
+          formData.append('files', e.target.files[i]);
+        }
 
-      for (let i = 0; i < e.target.files.length; i++) {
-        formData.append('files', e.target.files[i]);
+        const { data } = await api.post('/file/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        console.log('Upload response:', data);
+        messageApi.success("Files uploaded successfully!");
+        FetchFileByPatient(selectedPatient.id);
+        setIsUploading(false);
+      } catch (error) {
+        console.error("Error in handleFileChange:", error);
+        setIsUploading(false);
       }
-
-      const { data } = await api.post('/file/upload', formData, {
-          headers: {
-              'Content-Type': 'multipart/form-data',
-          },
-      });
-      console.log('Upload response:', data);
-      messageApi.success("Files uploaded successfully!");
-      FetchFileByPatient(selectedPatient.id);
     }
   };
 
@@ -85,7 +94,7 @@ export default function DocumentsPage() {
       if (confirmed) {
         console.log('File deleted:', id);
         try {
-            const { data } = await api.post(`/file/delete/${id}`);
+            await api.post(`/file/delete/${id}`);
             setFiles((prev) => prev.filter((f) => f.id !== id));
             messageApi.success("File deleted successfully!");
             FetchFileByPatient(selectedPatient.id);
@@ -126,21 +135,27 @@ export default function DocumentsPage() {
 
 
         {/* --- Enhanced Upload Zone --- */}
-        <label className="relative group cursor-pointer block">
+        <label className={`relative group cursor-pointer block ${isUploading ? 'pointer-events-none opacity-80' : ''}`}>
           <input type="file" multiple className="hidden" onChange={handleFileChange} />
           
           <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 group-hover:bg-blue-50 group-hover:border-blue-400 transition-all duration-300">
-            {/* The Big Upload Icon */}
+            {/* The Icon/Spinner Container */}
             <div className="p-4 bg-white rounded-full shadow-sm mb-4 group-hover:scale-110 transition-transform duration-300">
-              <UploadCloud size={40} className="text-blue-500" />
+              {isUploading ? (
+                <Loader2 size={40} className="text-blue-500 animate-spin" />
+              ) : (
+                <UploadCloud size={40} className="text-blue-500" />
+              )}
             </div>
             
             <div className="text-center">
               <p className="text-lg font-semibold text-gray-700">
-                Click to upload <span className="text-blue-600">or drag and drop</span>
+                {isUploading ? "Uploading files..." : (
+                  <>Click to upload <span className="text-blue-600">or drag and drop</span></>
+                )}
               </p>
               <p className="text-sm text-gray-400 mt-1">
-                Any file type accepted (Max 10MB per file)
+                {isUploading ? "Please wait a moment" : "Any file type accepted (Max 10MB per file)"}
               </p>
             </div>
             

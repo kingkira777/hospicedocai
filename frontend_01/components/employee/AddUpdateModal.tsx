@@ -61,7 +61,7 @@ const AddUpdateEmployeeModal = ({ payload, open, onClose }: Props) => {
     const { control, handleSubmit, reset, watch } = useForm<EmployeeDataInterface>({
         defaultValues: {
             id: null,
-            companyId: user?.company?.id,
+            companyId: user?.companyId,
             firstName: '',
             lastName: '',
             dateOfBirth: null,
@@ -82,14 +82,14 @@ const AddUpdateEmployeeModal = ({ payload, open, onClose }: Props) => {
         if (payload) {
             reset({
                 ...payload,
-                companyId: user?.company?.id,
+                companyId: user?.companyId,
             });
         }
 
         if(payload === undefined){
             reset({
                 id: null,
-                companyId: user?.company?.id,
+                companyId: user?.companyId,
                 firstName: '',
                 lastName: '',
                 dateOfBirth: null,
@@ -124,13 +124,13 @@ const AddUpdateEmployeeModal = ({ payload, open, onClose }: Props) => {
         }
         try {
             console.log("Employee data to submit:", employeeData);
-            employeeData.companyId = user?.company?.id;
+            employeeData.companyId = user?.companyId;
             const endpoint = employeeData.id ? `/employee/update/${employeeData.id}` : '/employee/create';
             const { data } = await api.post(endpoint, employeeData);
             messageApi.success("Employee saved successfully!");
             reset({
                 id: null,
-                companyId: user?.company?.id,
+                companyId: user?.companyId,
                 firstName: '',
                 lastName: '',
                 dateOfBirth: null,

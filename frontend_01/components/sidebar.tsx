@@ -30,21 +30,23 @@ type Item = {
   icon: React.ComponentType<{ className?: string }>
 }
 
-const items: Item[] = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/patients", label: "Patients", icon: Users },
-  { href: "/documents", label: "Documents", icon: FileStack },
-  { href: "/adr-analysis", label: "ADR Analysis", icon: BookCheck },
-  { href: "/risk-analysis", label: "Denial Risks Analysis", icon: FileUser },
-  { href: "/note-analysis", label: "RN Notes Analysis", icon: FileSearch },
-  { href: "/employee", label: "Employee", icon: BookUser },
-  { href: "/users", label: "Users", icon: SquareUser },
-]
+
 
 export function Sidebar() {
   const { user }:any = useAuth();
   const pathname = usePathname()
   const [open, setOpen] = useState(true)
+
+  const items: Item[] = [
+    { href: "/dashboard", label: "Dashboard", icon: Home },
+    { href: "/patients", label: "Patients", icon: Users },
+    { href: "/documents", label: "Documents", icon: FileStack },
+    { href: "/adr-analysis", label: "ADR Analysis", icon: BookCheck },
+    { href: "/risk-analysis", label: "Denial Risks Analysis", icon: FileUser },
+    { href: "/note-analysis", label: "RN Notes Analysis", icon: FileSearch },
+    { href: "/employee", label: "Employee", icon: BookUser },
+    ...(user?.type === "user" ? [{ href: "/users", label: "Users", icon: SquareUser }] : []),
+  ];
 
   useEffect(() => {
     const saved = localStorage.getItem("sidebar-open")
@@ -103,7 +105,7 @@ export function Sidebar() {
 
       <div className="px-3 pb-5 pt-2">
         <div className={`rounded-2xl bg-white/10 p-3`}>
-          <p className="text-xs leading-5">{open ? user?.company?.name: user?.company?.name.slice(0, 1).toUpperCase()}</p>
+          <p className="text-xs leading-5">{open ? user?.company: user?.company.slice(0, 1).toUpperCase()}</p>
         </div>
       </div>
     </aside>

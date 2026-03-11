@@ -9,7 +9,8 @@ import {
   Sparkles,
   Thermometer,
   ShieldAlert,
-  Clock
+  Clock,
+  Loader2
 } from 'lucide-react';
 
 import PatientDropdown from '@/components/risk-analysis/PatientDropdown';
@@ -22,9 +23,10 @@ export default function NoteAnalysis() {
   const { user }:any = useAuth();
   const [messageApi, contextHolder] = message.useMessage();
   const [selectedPatient, setSelectedPatient] = useState(null as any);
-  const [selectedNote, setSelectedNote] = useState(null as any);
+  const [selectedNote, setSelectedNote] = useState("" as any);
   const [patientFiles, setPatientFiles] = useState([] as any);
   const [analysisData, setAnalysisData]:any = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     console.log(selectedNote);
@@ -33,8 +35,11 @@ export default function NoteAnalysis() {
 
   const fetchNoteAnalysisData = async() => {
     try {
+      
       if(!selectedPatient || !selectedNote) return;
 
+      
+      setIsGenerating(true);
       const note = patientFiles.find((file:any) => file.id == selectedNote);
       const { data } = await api.post(`/analysis/note-data/${selectedPatient.id}`, {
         note : note.fileName
@@ -48,8 +53,11 @@ export default function NoteAnalysis() {
         return;
       }
       setAnalysisData(finalResults.analysis_results[0]);
+      setIsGenerating(false);
     } catch (error) {
       console.log(error);
+      messageApi.error("Failed to generate analysis. Please try again later.");
+      setIsGenerating(false);
     }
   };
   
@@ -64,6 +72,8 @@ export default function NoteAnalysis() {
         messageApi.warning("Please select a patient and a note");
         return;
       }
+      
+      setIsGenerating(true);
       const note = patientFiles.find((file:any) => file.id == selectedNote);
       const { data } = await api.post(`/analysis/note/${selectedNote}`, {
         patientId : selectedPatient.id,
@@ -76,11 +86,16 @@ export default function NoteAnalysis() {
       const nonRN = finalResults.analysis_results[0].non_rn_notes;
       if(nonRN.trim() != ""){
         messageApi.warning(nonRN);
+        setIsGenerating(false);
         return;
       }
       setAnalysisData(finalResults.analysis_results[0]);
+      
+      setIsGenerating(false);
     } catch (error) {
       console.error("Error in handleGenerateAI:", error);
+      messageApi.error("Failed to generate analysis. Please try again later.");
+      setIsGenerating(false);
     }
   }
 
@@ -220,9 +235,19 @@ export default function NoteAnalysis() {
 
                 <button 
                   onClick={handleGenerateAI}
-                  className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2 group">
-                  <Sparkles size={18} className="group-hover:rotate-12 transition-transform" />
-                  Generate AI Assistant
+                  disabled={isGenerating}
+                  className={`w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2 group ${isGenerating ? 'opacity-80 cursor-not-allowed' : ''}`}>
+                  {isGenerating ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Analyzing Note...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={18} className="group-hover:rotate-12 transition-transform" />
+                      Generate AI Assistant
+                    </>
+                  )}
                 </button>
               </div>
             </div>

@@ -22,7 +22,7 @@ export default function PatientDropdown({onSelect}: Props) {
 
   const fetchPatientSelectList = async () => {
       try {
-          const { data } = await api.get(`/patient/list-select?companyId=${user?.company.id}`);
+          const { data } = await api.get(`/patient/list-select?companyId=${user?.companyId}`);
           console.log("Fetched patient select list:", data);
           const formData:any = [];
           for(const patient of data){

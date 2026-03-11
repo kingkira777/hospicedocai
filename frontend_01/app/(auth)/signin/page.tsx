@@ -14,12 +14,32 @@ export default function SignInPage() {
 
   const handleSignIn = async () => {
     try {
+      let userData:any = {};
       const { data } = await api.post('/auth/login', {
         email,
         password,
       });
-      if(data.id){
-        localStorage.setItem("user", JSON.stringify(data))
+      console.log(data);
+
+      if(data?.employee){
+        userData.id = data?.employee?.id;
+        userData.companyId = data?.employee?.company?.id;
+        userData.company = data?.employee?.company?.name;
+        userData.name = data?.employee?.firstName + ' ' + data?.employee?.lastName;
+        userData.email = data?.email || '';
+        userData.role = data?.accessLevel;
+        userData.type = "employee";
+        localStorage.setItem("user", JSON.stringify(userData))
+        router.replace("/dashboard")
+      }else{
+        userData.id = data?.id;
+        userData.companyId = data?.company?.id;
+        userData.company = data?.company?.name;
+        userData.name = data?.email;
+        userData.email = data?.email || '';
+        userData.role = data?.accessLevel;
+        userData.type = "user";
+        localStorage.setItem("user", JSON.stringify(userData))
         router.replace("/dashboard")
       }
     } catch (error) {
