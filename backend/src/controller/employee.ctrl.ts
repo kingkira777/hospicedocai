@@ -129,12 +129,17 @@ class EmployeeController {
 
     UpdateAccount = async (employeeId : number, accountData : any) => {
         try {
-
+            console.log(`Account data:`,accountData);
             const encryptedPassword = await bcrypt.hash(accountData.password || '', 10);
 
-            const accountPayload = {
-                password : encryptedPassword,
+            let accountPayload:any = {
+                accessLevel : accountData.accessLevel
             };
+
+            if(accountData.password.trim() != ""){
+                accountPayload.password = encryptedPassword;
+            }
+
             const account = await EmployeeAccount.update(accountPayload, {
                 where : {
                     employeeId : employeeId

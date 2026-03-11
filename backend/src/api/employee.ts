@@ -59,7 +59,6 @@ router.post("/account-update/:employeeId", async (req, res) => {
     try {
         const employeeId = parseInt(req.params.employeeId, 10);
         const accountData = req.body;
-        console.log(`Updating account for employee ID ${employeeId} with data:`, accountData);
         const result = await employeeCtrl.UpdateAccount(employeeId, accountData);
         res.json(result);
     } catch (error) {

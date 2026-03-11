@@ -124,6 +124,7 @@ const AddUpdateEmployeeModal = ({ payload, open, onClose }: Props) => {
         }
         try {
             console.log("Employee data to submit:", employeeData);
+            employeeData.companyId = user?.company?.id;
             const endpoint = employeeData.id ? `/employee/update/${employeeData.id}` : '/employee/create';
             const { data } = await api.post(endpoint, employeeData);
             messageApi.success("Employee saved successfully!");

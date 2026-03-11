@@ -6,6 +6,7 @@ import { message, type TableProps } from "antd";
 
 import CustomTable from "@/components/CustomTable"
 import AddUpdateEmployeeModal from "@/components/employee/AddUpdateModal";
+import AddUpdateEmployeeAccount from "@/components/employee/AddUpdateAccount";
 import { showConfirmationDialog } from "@/lib/utils";
 import api from "@/lib/axios";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,6 +16,7 @@ export default function EmployeePage() {
   const { user }:any = useAuth();
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [employeeData, setEmployeeData] = useState([]);
   const [editEmployee, setEditEmployee] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -80,6 +82,13 @@ export default function EmployeePage() {
           >
             Edit
           </button>
+            <button className="cursor-pointer bg-amber-500 text-white py-2 px-4 rounded" onClick={() => {
+              handleEditEmployee(record);
+              setIsAccountModalOpen(true);
+            }}
+          >
+            Account
+          </button>
             <button className="cursor-pointer bg-red-500 text-white py-2 px-4 rounded" onClick={() => {
               handleRemoveEmployee(record);
             }}
@@ -132,6 +141,15 @@ export default function EmployeePage() {
         payload={editEmployee || undefined}
         onClose={() => {
           setIsModalOpen(false)
+          fetchEmployees(user?.company?.id);
+        }}
+      />
+
+      <AddUpdateEmployeeAccount
+        open={isAccountModalOpen}
+        payload={editEmployee || undefined}
+        onClose={() => {
+          setIsAccountModalOpen(false)
           fetchEmployees(user?.company?.id);
         }}
       />
