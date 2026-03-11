@@ -1,29 +1,63 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, ChevronDown, Search, Users, Check } from 'lucide-react';
+import api from '@/lib/axios';
+import { useAuth } from '@/hooks/use-auth';
 
-// Sample data for the dropdown
-const patients = [
-  { id: "16", name: "TINAJERO PEREZ", status: "High Risk", color: "text-rose-600" },
-  { id: "22", name: "MARIA GONZALEZ", status: "Low Risk", color: "text-emerald-600" },
-  { id: "09", name: "ROBERT SMITH", status: "Medium Risk", color: "text-amber-600" },
-];
 
-export default function PatientDropdown() {
+type Props = {
+  onSelect: (patient: any) => void;
+}
+
+
+export default function PatientDropdown({onSelect}: Props) {
+  const { user }:any = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState(patients[0]);
+  const [selectedPatient, setSelectedPatient]:any = useState(null);
+  const [patients, setPatientList] = useState([]);
 
-  return (
-    <div className="max-w-7xl mx-auto flex items-center justify-between mb-8 px-2">
+
+
+
+  const fetchPatientSelectList = async () => {
+      try {
+          const { data } = await api.get(`/patient/list-select?companyId=${user?.company.id}`);
+          console.log("Fetched patient select list:", data);
+          const formData:any = [];
+          for(const patient of data){
+              const xData = {
+                  id: patient.id,
+                  name: patient.firstName + ' ' + patient.lastName,
+                  gender : patient.gender,
+                  dateOfBirth: patient.dateOfBirth,
+                  startOfCare: patient.startOfCare,
+              };
+              formData.push(xData);
+          }
+          setPatientList(formData);
+      } catch (error) {
+          console.error("Error in FetchPatientSelectList:", error);
+      }
+  };
+
+  useEffect(() => {
+    if(user){
+      fetchPatientSelectList();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (selectedPatient) {
+      onSelect(selectedPatient);
+    }
+  },[selectedPatient]);
+
+  return (  
+    <div className="max-w-7xl mx-auto flex items-center justify-between px-2">
       {/* Left Side: Page Title */}
       <div>
-        <h1 className="text-xl font-black text-slate-800 tracking-tight uppercase">
-          Clinical Audit Portal
-        </h1>
-        <p className="text-xs font-bold text-slate-400">v2.4.0 • March 2026</p>
       </div>
-
       {/* Right Side: Enhanced Patient Dropdown */}
       <div className="relative">
         <button 
@@ -33,7 +67,7 @@ export default function PatientDropdown() {
         >
           <div className="text-right hidden sm:block">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Selected Patient</p>
-            <p className="text-sm font-bold text-slate-800">{selectedPatient.name} ({selectedPatient.id})</p>
+            <p className="text-sm font-bold text-slate-800">{selectedPatient?.name} ({selectedPatient?.id})</p>
           </div>
           
           <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
@@ -59,9 +93,9 @@ export default function PatientDropdown() {
                 </div>
               </div>
 
-              {patients.map((patient) => (
+              {patients.map((patient:any) => (
                 <button
-                  key={patient.id}
+                  key={patient?.id}
                   onClick={() => {
                     setSelectedPatient(patient);
                     setIsOpen(false);
@@ -81,7 +115,7 @@ export default function PatientDropdown() {
                       </p>
                     </div>
                   </div>
-                  {selectedPatient.id === patient.id && (
+                  {selectedPatient?.id === patient.id && (
                     <Check size={16} className="text-indigo-500" />
                   )}
                 </button>

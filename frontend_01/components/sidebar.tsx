@@ -22,6 +22,8 @@ import {
   BookUser
 } from "lucide-react"
 
+import { useAuth } from "@/hooks/use-auth"
+
 type Item = {
   href: string
   label: string
@@ -37,11 +39,10 @@ const items: Item[] = [
   { href: "/note-analysis", label: "RN Notes Analysis", icon: FileSearch },
   { href: "/employee", label: "Employee", icon: BookUser },
   { href: "/users", label: "Users", icon: SquareUser },
-  // { href: "/signin", label: "Signin", icon: LogIn },
-  // { href: "/signup", label: "Signup", icon: LogOut },
 ]
 
 export function Sidebar() {
+  const { user }:any = useAuth();
   const pathname = usePathname()
   const [open, setOpen] = useState(true)
 
@@ -51,7 +52,11 @@ export function Sidebar() {
   }, [])
   useEffect(() => {
     localStorage.setItem("sidebar-open", open ? "1" : "0")
-  }, [open])
+  }, [open]);
+
+  useEffect(() => {
+  }, [user])
+
 
   return (
       <aside
@@ -98,7 +103,7 @@ export function Sidebar() {
 
       <div className="px-3 pb-5 pt-2">
         <div className={`rounded-2xl bg-white/10 p-3`}>
-          <p className="text-xs leading-5">{open ? "Compnay Name" : "Tip"}</p>
+          <p className="text-xs leading-5">{open ? user?.company?.name: user?.company?.name.slice(0, 1).toUpperCase()}</p>
         </div>
       </div>
     </aside>

@@ -6,14 +6,64 @@ import path from 'path';
 import fileCtrl from '../controller/file.ctrl';
 import denialRiskCtrl from '../controller/denialRisk.ctrl';
 import adrCtrl from '../controller/adr.ctrl';
+import noteCtrl from '../controller/note.ctrl';
 
 
 
+
+
+//Note Analysis
+
+router.post('/note-data/:patientId', async (req, res) => {
+    try {
+        const patientId = parseInt(req.params.patientId, 10);
+        const { note } = req.body; 
+        const data = await noteCtrl.PatientAnalysisData(patientId, note);
+        res.json(data);
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({ error: (error as Error).message });
+    }
+});
+
+router.post('/note/:fileId', async (req, res) => {
+    try {
+        const files:any = [];
+        const fileId = parseInt(req.params.fileId, 10);
+        const { userId, patientId, note } = req.body;
+        const patientFiles = await fileCtrl.FindOneFile(fileId);
+        const filePath = path.join(__dirname, `../uploads/${patientFiles?.fileName}`);
+        files.push(filePath);
+        console.log(req.body);
+        console.log('Files to be analyzed:', files);
+        const result = await noteCtrl.AnalyzeNote(patientId, userId, note, files);
+        console.log(result);
+        res.json(result);
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({ error: (error as Error).message });
+    }
+});
+
+
+
+//Denial Risk Analysis
+router.post('/denial-risk-data/:patientId', async (req, res) => {
+    try {
+        const patientId = parseInt(req.params.patientId, 10);
+        const data = await denialRiskCtrl.PatientDenialRiskData(patientId);
+        res.json(data);
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({ error: (error as Error).message });
+    }
+});
 
 router.post("/denial-risk/:patientId", async (req, res) => {
     try {
         const patientId = parseInt(req.params.patientId, 10);
         const patientFiles = await fileCtrl.GetFilesByPatientId(patientId);
+        const { userId } = req.body;
 
         if(patientFiles.length === 0){
             return res.status(200).json({ type: "error", message: "No files found for this patient" });
@@ -29,7 +79,7 @@ router.post("/denial-risk/:patientId", async (req, res) => {
             return res.status(200).json({ type: "error", message: "No RN Initial or Update Assessment files found for this patient" });
         }
 
-        const result = await denialRiskCtrl.AnalyzeDenialRisk(files);
+        const result = await denialRiskCtrl.AnalyzeDenialRisk(patientId, userId, files);
         console.log(result);
         res.status(200).json(result);
     } catch (error) {
@@ -40,7 +90,6 @@ router.post("/denial-risk/:patientId", async (req, res) => {
 
 
 // ADR Analysis
-
 router.post('/adr-data/:patientId', async (req, res) => {
     try {
         const patientId = parseInt(req.params.patientId, 10);

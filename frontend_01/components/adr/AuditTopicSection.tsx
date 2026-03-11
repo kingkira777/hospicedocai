@@ -12,45 +12,14 @@ import {
 // --- Types & Data ---
 interface AuditTopic {
   id: number;
-  title: string;
+  topic_name: string;
   status: 'PASS' | 'NEEDS WORK';
-  finding: string;
-  recommendation: string;
+  finding: string[];
+  recommendation: string[];
 }
 
-const auditTopics: AuditTopic[] = [
-  {
-    id: 1,
-    title: "Hospice Eligibility & Decline",
-    status: "PASS",
-    finding: "Patient is eligible for hospice due to terminal stage Alzheimer's.",
-    recommendation: "Continue monitoring patient's condition closely."
-  },
-  {
-    id: 2,
-    title: "Objective Measurements (Weight, MAC, PPS/KPS/FAST, Vitals)",
-    status: "PASS",
-    finding: "Measurements provided align with patient condition.",
-    recommendation: "Regular updates on weight and vital trends advised."
-  },
-  {
-    id: 3,
-    title: "Symptom Burden & Failure of Management (Pain/Dyspnea/Edema/etc.)",
-    status: "PASS",
-    finding: "Symptoms are well-documented and align with current treatment plan.",
-    recommendation: "Maintain current documentation frequency."
-  },
-  {
-    id: 4,
-    title: "Utilization Necessity (Visits vs Orders vs Clinical Need)",
-    status: "NEEDS WORK",
-    finding: "Discrepancy noted between ordered frequency and actual clinical visits recorded in the last period.",
-    recommendation: "Ensure all clinical visits are logged immediately and align with physician orders."
-  }
-  // ... Add topics 5-15 as needed
-];
 
-export default function AuditTopicsSection() {
+export default function AuditTopicsSection({data}: {data: AuditTopic[]}) {
   const [openId, setOpenId] = useState<number | null>(1); // Default first one open
 
   return (
@@ -65,7 +34,7 @@ export default function AuditTopicsSection() {
       </div>
 
       <div className="space-y-3">
-        {auditTopics.map((topic) => (
+        {data?.map((topic) => (
           <div 
             key={topic.id} 
             className={`group bg-white border rounded-2xl transition-all duration-200 ${
@@ -86,7 +55,7 @@ export default function AuditTopicsSection() {
                 <h3 className={`font-bold text-sm md:text-base transition-colors ${
                   openId === topic.id ? 'text-indigo-700' : 'text-slate-700'
                 }`}>
-                  {topic.title}
+                  {topic.topic_name}
                 </h3>
               </div>
 
@@ -117,7 +86,7 @@ export default function AuditTopicsSection() {
                       Findings
                     </p>
                     <p className="text-sm text-slate-600 leading-relaxed font-medium">
-                      {topic.finding}
+                      {topic.finding.join(', ')}
                     </p>
                   </div>
 
@@ -128,7 +97,7 @@ export default function AuditTopicsSection() {
                       Recommendations
                     </p>
                     <p className="text-sm text-indigo-900/80 leading-relaxed font-semibold bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
-                      {topic.recommendation}
+                      {topic.recommendation.join(', ')}
                     </p>
                   </div>
                 </div>

@@ -27,12 +27,12 @@ interface PatientFormData {
  * to illustrate passing data back to the caller.
  */
 export default function AddUpdatePatientModal({ open, close, payload }: AddUpdateModalProps) {
-    const [messageApi, contextHolder] = message.useMessage();
-    const [visible, setVisible] = useState(open);
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [messageApi, contextHolder] = message.useMessage();
+  const [visible, setVisible] = useState(open);
     
 
   const [formData, setFormData] = useState<PatientFormData>({
-    companyId: 1,
     firstName: "",
     lastName: "",
     gender: "male",
@@ -58,7 +58,7 @@ export default function AddUpdatePatientModal({ open, close, payload }: AddUpdat
     }else{
         // reset form when opening for new patient
         setFormData({
-            companyId: 1,
+            companyId: user.company?.id,
             firstName: "",
             lastName: "",
             gender: "male",
@@ -77,8 +77,8 @@ export default function AddUpdatePatientModal({ open, close, payload }: AddUpdat
   const handleOk = async () => {
     console.log("Form data to submit:", formData);
 
-    formData.companyId = 1;
-    formData.userId = '1';
+    formData.companyId = user.company?.id;
+    formData.userId = user?.id;
 
 
     if(!formData.firstName.trim() || !formData.lastName.trim() || !formData.gender || !formData.dateOfBirth || !formData.startOfCare){

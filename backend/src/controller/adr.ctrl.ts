@@ -1,8 +1,7 @@
 import OpenAIGeneral from "../utils/API_OpenAIGeneral";
 import { ADRRiskSchema, ADRRiskData } from "../constant/AI_Zod_Schema";
 import { ADR_SYSTEM_PROMPT } from "../constant/AI_instructions";
-import PatientADR from "../models/patientAdr.model";
-
+import PatientAnalysisData from "../models/patientAnalysisData.model";
 
 const content = `
     Perform an ADR audit on the uploaded medical documents. 
@@ -13,7 +12,7 @@ class ADRRiskAnalysisController{
 
 
     PatientADRData = async(patientId: number) => {
-        const result = await PatientADR.findOne({ where: { patientId: patientId, isDefault: true } });
+        const result = await PatientAnalysisData.findOne({ where: { patientId: patientId, tag: 'adr', isDefault: true } });
         if(result){
             const rawData = result.data;
             const parsedData = JSON.parse(rawData);
@@ -25,12 +24,13 @@ class ADRRiskAnalysisController{
 
     AnalyzeADRRisk = async(patientId: number, userId: number, pdfPaths: string[]) => {
         const result = await OpenAIGeneral({ pdfPaths, prompt: ADR_SYSTEM_PROMPT, zodSchema: ADRRiskSchema, content});
-        await PatientADR.update({
+        await PatientAnalysisData.update({
             isDefault : false,
-        }, {where : {patientId : patientId}});
+        }, {where : {patientId : patientId, tag:'adr'}});
 
-        await PatientADR.create({
+        await PatientAnalysisData.create({
             patientId: patientId,
+            tag: 'adr',
             data: JSON.stringify(result),
             isDefault : true,
             userId

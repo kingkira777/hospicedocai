@@ -1,6 +1,7 @@
 import OpenAIGeneral from "../utils/API_OpenAIGeneral";
 import { DenialRiskSchema } from "../constant/AI_Zod_Schema";
 import { DENIAL_RISK_INSTRUCTIONS } from "../constant/AI_instructions";
+import PatientAnalysisData from "../models/patientAnalysisData.model";
 
 
 const content = `
@@ -17,13 +18,38 @@ const content = `
 
 class DenialRiskAIController {
 
-    AnalyzeDenialRisk = async (pdfPaths: string[]) => {
-        return await OpenAIGeneral({
+
+    PatientDenialRiskData = async(patientId: number) => {
+        const result = await PatientAnalysisData.findOne({ where: { patientId: patientId, tag: 'denial', isDefault: true } });
+        if(result){
+            const rawData = result.data;
+            const parsedData = JSON.parse(rawData);
+            return parsedData
+        }
+        return {};
+    };
+
+
+    AnalyzeDenialRisk = async (patientId: number, userId: number, pdfPaths: string[]) => {
+        const result =  await OpenAIGeneral({
             pdfPaths,
             content,
             prompt: DENIAL_RISK_INSTRUCTIONS,
             zodSchema: DenialRiskSchema
         });
+
+        await PatientAnalysisData.update({
+            isDefault : false,
+        }, {where : {patientId : patientId, tag:'denial'}});
+
+        await PatientAnalysisData.create({
+            patientId: patientId,
+            tag: 'denial',
+            data: JSON.stringify(result),
+            isDefault : true,
+            userId
+        });
+        return result;
     }
 
 

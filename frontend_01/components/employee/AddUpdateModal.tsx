@@ -12,6 +12,9 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { useForm, Controller } from 'react-hook-form';
+import api from '@/lib/axios';
+import { useAuth } from '@/hooks/use-auth';
+
 
 const { Text } = Typography;
 
@@ -52,12 +55,13 @@ interface Props {
 }
 
 const AddUpdateEmployeeModal = ({ payload, open, onClose }: Props) => {
+    const { user }:any = useAuth();
     const [messageApi, contextHolder] = message.useMessage();
 
     const { control, handleSubmit, reset, watch } = useForm<EmployeeDataInterface>({
         defaultValues: {
             id: null,
-            companyId: '0',
+            companyId: user?.company?.id,
             firstName: '',
             lastName: '',
             dateOfBirth: null,
@@ -74,10 +78,30 @@ const AddUpdateEmployeeModal = ({ payload, open, onClose }: Props) => {
     });
 
     useEffect(() => {
+        console.log("Payload:", payload);
         if (payload) {
             reset({
                 ...payload,
-                companyId: '0',
+                companyId: user?.company?.id,
+            });
+        }
+
+        if(payload === undefined){
+            reset({
+                id: null,
+                companyId: user?.company?.id,
+                firstName: '',
+                lastName: '',
+                dateOfBirth: null,
+                address: '',
+                zipcode: '',
+                ssn: '',
+                driverLic: '',
+                phoneNumber: '',
+                cellPhoneNumber: '',
+                faxNumber: '',
+                profInfo: { jobTitle: '', discipline: '', profLic: '', npi: '', startDate: null, endDate: null, validTill: null },
+                account: { email: '', status: 'active', accessLevel: 'user' }
             });
         }
     }, [payload, reset]);
@@ -89,7 +113,6 @@ const AddUpdateEmployeeModal = ({ payload, open, onClose }: Props) => {
             return;
         }
 
-
         if(!employeeData.account.email?.trim() || !employeeData.account.status?.trim() || !employeeData.account.accessLevel?.trim()) {
             messageApi.warning("All account fields are required.");
             return;
@@ -99,18 +122,31 @@ const AddUpdateEmployeeModal = ({ payload, open, onClose }: Props) => {
             messageApi.warning("Please enter a valid email address.");
             return;
         }
-
-
         try {
             console.log("Employee data to submit:", employeeData);
-            // const endpoint = employeeData.id ? `/employee/update/${employeeData.id}` : '/employee/create';
-            // const { data } = await api.post(endpoint, employeeData);
-            // ShowAlert({ title: 'Success', text: 'Employee saved successfully.', icon: 'success', isToast: true });
-            // onClose(null);
+            const endpoint = employeeData.id ? `/employee/update/${employeeData.id}` : '/employee/create';
+            const { data } = await api.post(endpoint, employeeData);
+            messageApi.success("Employee saved successfully!");
+            reset({
+                id: null,
+                companyId: user?.company?.id,
+                firstName: '',
+                lastName: '',
+                dateOfBirth: null,
+                address: '',
+                zipcode: '',
+                ssn: '',
+                driverLic: '',
+                phoneNumber: '',
+                cellPhoneNumber: '',
+                faxNumber: '',
+                profInfo: { jobTitle: '', discipline: '', profLic: '', npi: '', startDate: null, endDate: null, validTill: null },
+                account: { email: '', status: 'active', accessLevel: 'user' }
+            });
+            onClose(data);
         } catch (error) {
             console.error("Error saving employee:", error);
             messageApi.error("An error occurred while saving the employee.");
-            // ShowAlert({ title: 'Error', text: 'An error occurred while saving.', icon: 'error', isToast: true });
         }
     };
 

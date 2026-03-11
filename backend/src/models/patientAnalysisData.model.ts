@@ -1,16 +1,14 @@
-import {Table, Column, Model, DataType, BelongsTo, HasMany} from 'sequelize-typescript';
-import Company from './company.model';
+import {Table, Column, Model, DataType, BelongsTo} from 'sequelize-typescript';
 import Patient from './patient.model';
 
 @Table({
     paranoid : true,
     timestamps: true,
-    tableName : 'Users',
+    tableName : 'PatientAnalysisData',
     createdAt : false,
     updatedAt : false
 })
-class User extends Model {
-
+class PatientAnalysisData extends Model {
     @Column({
         type : DataType.INTEGER,
         autoIncrement : true,
@@ -22,27 +20,32 @@ class User extends Model {
         type : DataType.INTEGER,
         allowNull : false
     })
-    companyId! : number;
+    patientId! : number;
 
     @Column({
         type : DataType.STRING,
-        unique : true,
         allowNull : false
     })
-    email! : string;
-
-    @Column({
-        type : DataType.STRING,
-        allowNull : true
-    })
-    password! : string;
+    tag! : string;
 
     @Column({
         type : DataType.TEXT,
-        allowNull : false,
-        defaultValue : 'admin'
+        allowNull : true
     })
-    role! : string;
+    data! : string;
+    
+    @Column({
+        type : DataType.BOOLEAN,
+        allowNull : false,
+        defaultValue : false
+    })
+    isDefault! : boolean;
+    
+    @Column({
+        type : DataType.INTEGER,
+        allowNull : false,
+    })
+    userId! : number;
     
     @Column({
         type : DataType.DATE,
@@ -50,7 +53,6 @@ class User extends Model {
         defaultValue : DataType.NOW
     })
     createdAt! : any;
-
     
     @Column({
         type : DataType.DATE,
@@ -59,20 +61,12 @@ class User extends Model {
     })
     updatedAt! : any;
 
-
-    @BelongsTo(() => Company,{
-        foreignKey : 'companyId',
+    @BelongsTo(() => Patient,{
+        foreignKey : 'patientId',
         targetKey : 'id',
-        as : 'company'
+        as : 'patient'
     })
-    company! : Company;
-
-    @HasMany(() => Patient,{
-        foreignKey : 'userId',
-        sourceKey : 'id',
-        as : 'patients'
-    })
-    patients! : Patient[];
+    patient! : Patient;
     
 }
-export default User;
+export default PatientAnalysisData;

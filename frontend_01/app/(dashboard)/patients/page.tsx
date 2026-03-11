@@ -9,9 +9,10 @@ import CustomTable from "@/components/CustomTable";
 import AddUpdatePatientModal from "@/components/patient/AddUpdateModal";
 import { showConfirmationDialog } from "@/lib/utils";
 import api from "@/lib/axios";
-
+import { useAuth } from "@/hooks/use-auth";
 
 export default function PatientPage() {
+  const { user } = useAuth();
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null); 
@@ -34,7 +35,7 @@ export default function PatientPage() {
 
   useEffect(() => {
     fetchPatients();
-  }, []);
+  }, [user]);
 
 
 

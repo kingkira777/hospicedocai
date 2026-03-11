@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import api from "@/lib/axios"
 
 export default function SignInPage() {
   const router = useRouter()
@@ -13,13 +14,14 @@ export default function SignInPage() {
 
   const handleSignIn = async () => {
     try {
-      const userData = {
-        id : 1,
-        name: "Admin User",
-        email: 'admin@gmail.com'
+      const { data } = await api.post('/auth/login', {
+        email,
+        password,
+      });
+      if(data.id){
+        localStorage.setItem("user", JSON.stringify(data))
+        router.replace("/dashboard")
       }
-      localStorage.setItem("user", JSON.stringify(userData))
-      router.replace("/dashboard")
     } catch (error) {
         console.error("Sign in failed:", error)
     }  

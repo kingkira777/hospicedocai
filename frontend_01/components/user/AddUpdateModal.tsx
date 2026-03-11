@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { Modal, Input, Select, Button, Typography, Form, message } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
+import api from '@/lib/axios';
+import { useAuth } from '@/hooks/use-auth';
 
 const { Text } = Typography;
 
@@ -20,12 +22,13 @@ interface Props {
 }
 
 const AddUpdateUserModal = ({ payload, open, onClose }: Props) => {
+    const { user }:any = useAuth();
     const [messageApi, contextHolder] = message.useMessage();
 
     const { control, handleSubmit, reset, watch } = useForm<UserInterface>({
         defaultValues: {
             id: null,
-            companyId: '0',
+            companyId: user?.company?.id || '0',
             email: '',
             password: '',
             retypePassword: '',
@@ -33,9 +36,8 @@ const AddUpdateUserModal = ({ payload, open, onClose }: Props) => {
         }
     });
 
-    const password = watch('password');
-
     useEffect(() => {
+        console.log('Payload in AddUpdateUserModal:', payload);
         if (payload) {
             reset({
                 id: payload.id || null,
@@ -46,31 +48,57 @@ const AddUpdateUserModal = ({ payload, open, onClose }: Props) => {
                 retypePassword: ''
             });
         }
+
+        if(payload === undefined){
+            reset({
+                id: null,
+                companyId: user?.company?.id || '0',
+                email: '',
+                role: 'user',
+                password: '',
+                retypePassword: ''
+            });
+        }
+
     }, [payload, reset]);
 
     const handleSave = async (formData: UserInterface) => {
         try {
+            if(formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+                messageApi.warning("Please enter a valid email address.");
+                return;
+            }
+
             if (formData.password !== formData.retypePassword) {
                 messageApi.error('Passwords do not match');
                 return;
             }
+            formData.companyId = user.company?.id;
 
-        
+            console.log('Saving user with data:', formData);
+            const endPoint = payload?.id ? `/user/update/${payload.id}` : '/user/create';
+            const { data } = await api.post(endPoint, formData);
+            console.log("User updated successfully:", data);
+            messageApi.success('User saved successfully');
             onClose(null);
-
         } catch (error) {
             console.error("Error saving user:", error);
             messageApi.error('An error occurred while saving the user. Please try again.');
         }
     };
 
+    const handleCancel = () => {
+        reset();
+        onClose();
+    }
+
     return (
         <Modal
             title={<span className="text-xl font-bold">{payload?.id ? 'Update' : 'Add'} New User</span>}
             open={open}
-            onCancel={() => onClose()}
+            onCancel={handleCancel}
             footer={[
-                <Button key="cancel" onClick={() => onClose()} danger>
+                <Button key="cancel" onClick={handleCancel} danger>
                     Cancel
                 </Button>,
                 <Button key="submit" type="primary" onClick={handleSubmit(handleSave)}>
@@ -79,6 +107,7 @@ const AddUpdateUserModal = ({ payload, open, onClose }: Props) => {
             ]}
         >
             <div className="py-4 space-y-5">
+                {contextHolder}
                 {/* Email Field */}
                 <div>
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Email Address</label>

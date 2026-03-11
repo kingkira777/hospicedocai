@@ -72,6 +72,16 @@ class UserController {
             if (!user) {
                 throw new Error("User not found");
             }
+
+            if(updateData.password?.trim() === ""){
+                delete updateData.password;
+            }else{
+                const encryptedPassword = await bcrypt.hash(updateData.password || '', 10);
+                updateData.password = encryptedPassword;
+            }
+
+            console.log(updateData);
+
             await user.update(updateData);
             return user;
         } catch (error) {
