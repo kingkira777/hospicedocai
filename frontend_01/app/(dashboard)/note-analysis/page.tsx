@@ -206,7 +206,7 @@ export default function NoteAnalysis() {
 
         {/* --- RIGHT COLUMN: AI CONTROLS (4 Columns) --- */}
         <div className="lg:col-span-4">
-          <div className="sticky top-8 space-y-6">
+          <div className="sticky top-20 space-y-6">
             
             {/* Patient & Note Selector Sidebar */}
             <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 shadow-xl">
