@@ -1,4 +1,5 @@
 import express = require('express');
+import SendEmail from '../utils/API_Email';
 
 import authRoutes from './auth';
 
@@ -30,5 +31,18 @@ router.use("/cases", casesRoutes);
 router.use("/user", userRoute);
 router.use("/analysis", analysisRoute);
 router.use("/employee", employeeRoute);
+
+
+/**Test */
+router.post('/send-mail', async (req, res) => {
+    try {
+        const { to, subject, text } = req.body;
+        await SendEmail({ to, subject, text });
+        res.json({ message: 'Email sent successfully' });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ error: 'Failed to send email' });
+    }
+});
 
 export default router;

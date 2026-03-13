@@ -4,9 +4,11 @@ import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import api from "@/lib/axios"
+import { message } from "antd"
 
 
 export default function SignInPage() {
+  const [messageApi, contextHolder] = message.useMessage();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,6 +19,17 @@ export default function SignInPage() {
   const handleSignIn = async () => {
     try {
       let userData:any = {};
+      
+      if (!email || !password) {
+        messageApi.error("All fields are required")
+        return;
+      }
+
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        messageApi.warning("Please enter a valid email address.");
+        return;
+      }
+      
       const { data } = await api.post('/auth/login', {
         email,
         password,
@@ -53,6 +66,7 @@ export default function SignInPage() {
 
   return (
     <main className="min-h-screen bg-blue-100 flex items-center justify-center">
+      {contextHolder}
       <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg flex overflow-hidden">
         {/* left image panel */}
         <div className="hidden md:block md:w-1/2">
