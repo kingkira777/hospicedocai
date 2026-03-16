@@ -1,8 +1,7 @@
 import express = require('express');
+import authCtrl from "../controller/auth.ctrl";
 
 const router = express.Router();
-
-import authCtrl from "../controller/auth.ctrl";
 
 
 router.post("/login", async(req,res) => {

@@ -22,7 +22,7 @@ export default function PatientPage() {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get(`/patient/list?companyId=${user?.companyId}`);
+      const { data } = await api.get(`/patient/list?companyId=${user?.companyId}&userId=${user?.id}`);
       setPatients(data.rows);
       setLoading(false);
     } catch (error) {
@@ -114,7 +114,7 @@ export default function PatientPage() {
     showConfirmationDialog('Are you sure?', 'Do you really want to delete this patient?').then(async (confirmed) => {
       if (confirmed) {
         console.log('Patient deleted:', patientData);
-        const { data } = await api.post(`/patient/remove/${patientData.id}`);
+        await api.post(`/patient/remove/${patientData.id}`, {userId: user?.id});
         messageApi.success("Patient deleted successfully!");
         setEditingPatient(null); 
         fetchPatients();

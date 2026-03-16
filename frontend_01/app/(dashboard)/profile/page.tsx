@@ -1,9 +1,10 @@
 "use client"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Switch } from "@/components/ui/switch"
 import { useState } from "react"
+import { Switch } from "antd"
 import { useAuth } from "@/hooks/use-auth"
+import UserActivityLog from "@/components/user/UserActivityLog"
 
 export default function ProfilePage() {
   const { user }:any = useAuth();
@@ -42,7 +43,9 @@ export default function ProfilePage() {
               <p className="text-sm text-muted-foreground">COMPANY</p>
             </div>
           </div>
-        </div>
+        </div>  
+
+
 
         {/* <div className="rounded-xl bg-background p-4 ring-1 ring-border">
           <h3 className="mb-3 font-medium text-foreground">Preferences</h3>
@@ -65,7 +68,11 @@ export default function ProfilePage() {
             <li className="rounded-lg bg-primary/10 p-3 text-primary">Movie Time</li>
           </ul>
         </div> */}
+
+        
       </div>
+      
+      <UserActivityLog />
     </section>
   )
 }

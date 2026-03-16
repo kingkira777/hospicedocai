@@ -1,6 +1,7 @@
 import {Table, Column, Model, DataType, BelongsTo, HasMany} from 'sequelize-typescript';
 import Company from './company.model';
 import Patient from './patient.model';
+import UserActivity from './userActivity.model';
 
 @Table({
     paranoid : true,
@@ -73,6 +74,13 @@ class User extends Model {
         as : 'patients'
     })
     patients! : Patient[];
+
+    @HasMany(() => UserActivity,{
+        foreignKey : 'userId',
+        sourceKey : 'id',
+        as : 'userActivities'
+    })
+    userActivities! : UserActivity[];
     
 }
 export default User;

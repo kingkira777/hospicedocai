@@ -12,6 +12,7 @@ interface UserInterface {
     email?: string;
     password?: string;
     retypePassword?: string;
+    userId ?: string;
     role?: string;
 }
 
@@ -73,7 +74,8 @@ const AddUpdateUserModal = ({ payload, open, onClose }: Props) => {
                 messageApi.error('Passwords do not match');
                 return;
             }
-            formData.companyId = user.company?.id;
+            formData.companyId = user.companyId;
+            formData.userId = user?.id;
 
             console.log('Saving user with data:', formData);
             const endPoint = payload?.id ? `/user/update/${payload.id}` : '/user/create';

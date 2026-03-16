@@ -7,9 +7,7 @@ import fileCtrl from '../controller/file.ctrl';
 import denialRiskCtrl from '../controller/denialRisk.ctrl';
 import adrCtrl from '../controller/adr.ctrl';
 import noteCtrl from '../controller/note.ctrl';
-
-
-
+import userCtrl from '../controller/user.ctrl';
 
 
 //Note Analysis
@@ -19,6 +17,14 @@ router.post('/note-data/:patientId', async (req, res) => {
         const patientId = parseInt(req.params.patientId, 10);
         const { note } = req.body; 
         const data = await noteCtrl.PatientAnalysisData(patientId, note);
+        
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "Note",
+            action: `Get Data for Patient Id: ${patientId}`,
+            req
+        });
+
         res.json(data);
     } catch (error) {
         console.log(error);
@@ -34,10 +40,16 @@ router.post('/note/:fileId', async (req, res) => {
         const patientFiles = await fileCtrl.FindOneFile(fileId);
         const filePath = path.join(__dirname, `../uploads/${patientFiles?.fileName}`);
         files.push(filePath);
-        console.log(req.body);
         console.log('Files to be analyzed:', files);
         const result = await noteCtrl.AnalyzeNote(patientId, userId, note, files);
-        console.log(result);
+
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "Note",
+            action: `Analyze Note for Patient Id: ${patientId}`,
+            req
+        });
+
         res.json(result);
     } catch (error) {
         console.log(error);
@@ -52,6 +64,14 @@ router.post('/denial-risk-data/:patientId', async (req, res) => {
     try {
         const patientId = parseInt(req.params.patientId, 10);
         const data = await denialRiskCtrl.PatientDenialRiskData(patientId);
+
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "Denial Risk",
+            action: `Get Data for Patient Id: ${patientId}`,
+            req
+        });
+
         res.json(data);
     } catch (error) {
         console.log(error);
@@ -80,6 +100,14 @@ router.post("/denial-risk/:patientId", async (req, res) => {
         }
 
         const result = await denialRiskCtrl.AnalyzeDenialRisk(patientId, userId, files);
+
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "Denial Risk",
+            action: `Analyze Denial Risk for Patient Id: ${patientId}`,
+            req
+        });
+
         console.log(result);
         res.status(200).json(result);
     } catch (error) {
@@ -94,6 +122,14 @@ router.post('/adr-data/:patientId', async (req, res) => {
     try {
         const patientId = parseInt(req.params.patientId, 10);
         const data = await adrCtrl.PatientADRData(patientId);
+
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "ADR",
+            action: `Get Data for Patient Id: ${patientId}`,
+            req
+        });
+
         res.json(data);
     } catch (error) {
         console.log(error);
@@ -116,6 +152,14 @@ router.post('/adr-analyze/:patientId', async (req, res) => {
         }
         console.log('Files to be analyzed:', files);
         const result = await adrCtrl.AnalyzeADRRisk(patientId, userId, files);
+
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "ADR",
+            action: `Analyze ADR for Patient Id: ${patientId}`,
+            req
+        });
+
         res.json(result);
     } catch (error) {
         console.log(error);

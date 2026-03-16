@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { use, useEffect } from 'react';
 import { Modal, Input, Select, Button, Typography, Form, message } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import api from '@/lib/axios';
+import { useAuth } from '@/hooks/use-auth';
 
 const { Text } = Typography;
 
@@ -11,6 +12,7 @@ interface UserInterface {
     accessLevel?: string;
     password?: string;
     retypePassword?: string;
+    userId? : string;
 }
 
 interface Props {
@@ -20,6 +22,7 @@ interface Props {
 }
 
 const AddUpdateEmployeeAccount = ({ payload, open, onClose }: Props) => {
+    const { user }:any = useAuth();
     const [messageApi, contextHolder] = message.useMessage();
 
     const { control, handleSubmit, reset, watch } = useForm<UserInterface>({
@@ -67,7 +70,7 @@ const AddUpdateEmployeeAccount = ({ payload, open, onClose }: Props) => {
                 messageApi.error('Passwords do not match');
                 return;
             }
-
+            formData.userId = user?.id;
             console.log('Saving user with data:', formData); 
             await api.post(`/employee/account-update/${formData.id}`,formData);
             messageApi.success('Employee saved successfully');

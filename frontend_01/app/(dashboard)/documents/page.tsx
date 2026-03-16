@@ -31,7 +31,8 @@ export default function DocumentsPage() {
   const FetchFileByPatient = async (patientId: number) => {
     try {
       const { data } = await api.post(`/file/by-patient/${patientId}`,{
-        category: (selectedCategory === 'all') ? null : selectedCategory
+        category: (selectedCategory === 'all') ? null : selectedCategory,
+        userId: user.id
       });
       console.log("Fetched file by patient:", data);
       if(data){
@@ -94,7 +95,7 @@ export default function DocumentsPage() {
       if (confirmed) {
         console.log('File deleted:', id);
         try {
-            await api.post(`/file/delete/${id}`);
+            await api.post(`/file/delete/${id}`, {userId: user?.id});
             setFiles((prev) => prev.filter((f) => f.id !== id));
             messageApi.success("File deleted successfully!");
             FetchFileByPatient(selectedPatient.id);

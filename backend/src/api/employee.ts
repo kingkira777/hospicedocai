@@ -1,12 +1,21 @@
 import express = require('express');
 import employeeCtrl from '../controller/employee.ctrl';
+import userCtrl from '../controller/user.ctrl';
 const router = express.Router();
 
 
 router.post('/list', async (req, res) => {
     try {
-        const { companyId, limit, offset } = req.body;
+        const { companyId, limit, offset, userId } = req.body;
         const employees = await employeeCtrl.List(companyId, limit, offset);
+
+        await userCtrl.LogUserActivity({
+            userId,
+            module: "Employee",
+            action: "List",
+            req
+        });
+
         res.json(employees);
     } catch (error) {
         console.error('Error fetching employees:', error);
@@ -18,8 +27,15 @@ router.post('/list', async (req, res) => {
 router.post("/create", async (req, res) => {
     try {
         const employeeData = req.body;
-        console.log('Received employee data:', employeeData);
         const employee = await employeeCtrl.Create(employeeData);
+
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "Employee",
+            action: "Create",
+            req
+        });
+
         res.json(employee);
     } catch (error) {
         console.error('Error creating employee:', error);
@@ -32,8 +48,15 @@ router.post("/update/:employeeId", async (req, res) => {
     try {
         const employeeId = parseInt(req.params.employeeId, 10);
         const updateData = req.body;
-        console.log(`Updating employee with ID ${employeeId} using data:`, updateData);
         const employee = await employeeCtrl.Update(employeeId, updateData);
+
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "Employee",
+            action: "Update",
+            req
+        });
+
         res.json(employee);
     } catch (error) {
         console.error(`Error updating employee with ID ${req.params.employeeId}:`, error);
@@ -45,8 +68,15 @@ router.post("/update/:employeeId", async (req, res) => {
 router.post("/remove/:employeeId", async (req, res) => {
     try {        
         const employeeId = parseInt(req.params.employeeId, 10);
-        console.log(`Deleting employee with ID ${employeeId}`);
         const result = await employeeCtrl.Remove(employeeId);
+
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "Employee",
+            action: "Remove",
+            req
+        });
+
         res.json(result);
     } catch (error) {
         console.error(`Error deleting employee with ID ${req.params.employeeId}:`, error);
@@ -60,6 +90,14 @@ router.post("/account-update/:employeeId", async (req, res) => {
         const employeeId = parseInt(req.params.employeeId, 10);
         const accountData = req.body;
         const result = await employeeCtrl.UpdateAccount(employeeId, accountData);
+
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "Employee",
+            action: "UpdateAccount",
+            req
+        });
+
         res.json(result);
     } catch (error) {
         console.error(`Error updating account for employee ID ${req.params.employeeId}:`, error);

@@ -7,8 +7,6 @@ import CustomTable from "@/components/CustomTable"
 import AddUpdateUserModal from "@/components/user/AddUpdateModal";
 import api from "@/lib/axios";
 import { useAuth } from "@/hooks/use-auth";
-import { set } from "date-fns";
-
 
 export default function UsersPage() {
   const { user } :any = useAuth();
@@ -97,7 +95,8 @@ export default function UsersPage() {
       <AddUpdateUserModal payload={editUser || undefined} open={isModalOpen} onClose={() => {
         setIsModalOpen(false)
         fetchUsers();
-      }} />
+      }} /> 
+
     </section>
   )
 }

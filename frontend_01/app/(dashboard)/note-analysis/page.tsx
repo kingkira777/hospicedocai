@@ -42,7 +42,8 @@ export default function NoteAnalysis() {
       setIsGenerating(true);
       const note = patientFiles.find((file:any) => file.id == selectedNote);
       const { data } = await api.post(`/analysis/note-data/${selectedPatient.id}`, {
-        note : note.fileName
+        note : note.fileName,
+        userId : user.id
       });
       console.log("Fetched note analysis data:", data); 
       const { finalResults } = data;

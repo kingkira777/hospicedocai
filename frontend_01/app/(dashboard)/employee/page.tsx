@@ -28,7 +28,8 @@ export default function EmployeePage() {
       const { data } = await api.post(`/employee/list`,{
         companyId,
         limit: 10,
-        offset: 0
+        offset: 0,
+        userId: user?.id
       });
       console.log("Employees data:", data);
       setEmployeeData(data.rows || []);
@@ -116,7 +117,7 @@ export default function EmployeePage() {
         // You can set the selected employee data to state here and pass it to the modal for removal
         showConfirmationDialog('Are you sure?', 'Do you really want to delete this employee?').then( async(confirmed) => {
         if (confirmed) {
-          await api.post(`/employee/remove/${record.id}`);
+          await api.post(`/employee/remove/${record.id}`, {userId: user?.id});
           fetchEmployees(parseInt(user?.companyId || '0', 10));  
           messageApi.success("Employee deleted successfully!");
           return;

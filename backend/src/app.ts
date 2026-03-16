@@ -14,15 +14,12 @@ const app = express();
 /**
  * body-parsing middleware to populate req.body
  */
+app.set('trust proxy', true);
 app.use(nocache());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-
-
-
 
 
 

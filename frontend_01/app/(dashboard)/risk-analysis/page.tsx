@@ -33,7 +33,9 @@ export default function DenialRiskAnalysis() {
 
   const fetchPatientAnalysisData = async(patientId:number) => {
     try {
-      const { data } = await api.post(`/analysis/denial-risk-data/${patientId}`);
+      const { data } = await api.post(`/analysis/denial-risk-data/${patientId}`,{
+        userId: user?.id
+      });
       console.log("Fetched patient analysis data:", data); 
       setAnalysisData(data);
     } catch (error) {

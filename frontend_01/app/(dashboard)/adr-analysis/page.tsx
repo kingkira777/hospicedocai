@@ -72,7 +72,9 @@ export default function MedicalAuditDashboard() {
   const fetchSavedAdrData = async () => {
     try {
         if(!selectedPatient) return;
-        const { data } = await api.post(`/analysis/adr-data/${selectedPatient.id}`);
+        const { data } = await api.post(`/analysis/adr-data/${selectedPatient.id}`,{
+            userId: user?.id
+        });
         if(data === null || data === 'null') return;
         setAnalysisData(data);
     } catch (error) {

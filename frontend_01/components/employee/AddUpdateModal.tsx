@@ -46,6 +46,7 @@ interface EmployeeDataInterface {
         status: string;
         accessLevel: string;
     };
+    userId? : string;
 }
 
 interface Props {
@@ -125,6 +126,7 @@ const AddUpdateEmployeeModal = ({ payload, open, onClose }: Props) => {
         try {
             console.log("Employee data to submit:", employeeData);
             employeeData.companyId = user?.companyId;
+            employeeData.userId = user?.id;
             const endpoint = employeeData.id ? `/employee/update/${employeeData.id}` : '/employee/create';
             const { data } = await api.post(endpoint, employeeData);
             messageApi.success("Employee saved successfully!");

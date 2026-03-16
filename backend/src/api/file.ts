@@ -5,6 +5,7 @@ import fs from 'fs';
 import fileCtrl from "../controller/file.ctrl";
 import { DOCUMENTS } from '../constant/AI_Documents';
 import DocumentCategoryAI from '../utils/API_DocumentCategoryAI';
+import userCtrl from '../controller/user.ctrl';
 
 const router = express.Router();
 
@@ -69,6 +70,13 @@ router.post("/upload", upload.array('files',30), async(req,res) => {
             await fileCtrl.CreateFile(fileDataToSave);
         }
 
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "File",
+            action: `File uploaded for Patient Id: ${req.body.patientId}`,
+            req
+        });
+
         res.json({message : "File uploaded successfully."});
     } catch (error) {
         console.log(error);
@@ -82,6 +90,14 @@ router.post("/by-patient/:patientId", async(req,res) => {
         const patientId = parseInt(req.params.patientId, 10);
         const category = req.body.category;
         const files = await fileCtrl.GetFilesByPatientId(patientId, category);
+
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "File",
+            action: `Files fetched for Patient Id: ${patientId}`,
+            req
+        });
+
         res.json(files);
     } catch (error) {
         res.status(400).json({ error: (error as Error).message });
@@ -92,6 +108,14 @@ router.post('/delete/:id', async(req,res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const file = await fileCtrl.DeleteFile(id);
+
+        await userCtrl.LogUserActivity({
+            userId: req.body.userId,
+            module: "File",
+            action: `File deleted for Patient Id: ${id}`,
+            req
+        });
+
         res.json(file);
     } catch (error) {
         res.status(400).json({ error: (error as Error).message });

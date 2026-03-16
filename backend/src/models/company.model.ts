@@ -1,6 +1,7 @@
 import {Table, Column, Model, DataType, HasMany} from 'sequelize-typescript';
 import User from './user.model';
 import Employee from './employee.model';
+import Patient from './patient.model';
 
 
 @Table({
@@ -61,7 +62,12 @@ class Company extends Model {
     })
     employees! : Employee[];
 
-
+    @HasMany(() => Patient,{
+        foreignKey : 'companyId',
+        sourceKey : 'id',
+        as : 'patients'
+    })
+    patients! : Patient[];
 
 }
 
